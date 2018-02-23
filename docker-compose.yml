@@ -1,0 +1,83 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    image: brackets-by-triad/nginx
+    ports:
+     - "${APP_PORT}:80"
+    volumes:
+     - .:/var/www/html
+    networks:
+     - harbornet
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    image: brackets-by-triad/php7.1
+    environment:
+      APP_ENV: "${APP_ENV}"
+      XDEBUG_HOST: "${XDEBUG_HOST}"
+    volumes:
+     - .:/var/www/html
+     - psyhistory:/root/.config
+    networks:
+     - harbornet
+  pgsql:
+    image: postgres:latest
+    ports:
+     - "${PGSQL_PORT}:5432"
+    environment:
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+      PGPASSWORD: "${PGPASSWORD}"
+    volumes:
+     - pgsqldata:/var/lib/postgresql/data
+     - .:/opt
+     - ./docker/pgsql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+     - ./docker/pgsql/export:/export
+     - ./docker/pgsql/import:/import
+    networks:
+     - harbornet
+  testing:
+    image: postgres:latest
+    ports:
+     - "${PGSQL_TEST_PORT}:5432"
+    environment:
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+    volumes:
+     - ${PGSQL_TEST_DIR}:/var/lib/postgresql/data
+     - .:/opt
+     - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    networks:
+     - harbornet
+  node:
+    build:
+      context: ./docker/node
+      dockerfile: Dockerfile
+    image: brackets-by-triad/node
+    user: node
+    volumes:
+     - .:/var/www/html
+    networks:
+     - harbornet
+  redis:
+    image: redis:alpine
+    volumes:
+     - redisdata:/data
+    networks:
+     - harbornet
+networks:
+  harbornet:
+    driver: "bridge"
+volumes:
+  pgsqldata:
+    driver: "local"
+  redisdata:
+    driver: "local"
+  psyhistory:
+    driver: "local"
