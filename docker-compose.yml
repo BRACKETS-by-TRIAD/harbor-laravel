@@ -4,7 +4,7 @@ services:
     build:
       context: ./docker/nginx
       dockerfile: Dockerfile
-    image: brackets-by-triad/nginx
+    image: brackets/nginx
     ports:
      - "${APP_PORT}:80"
     volumes:
@@ -15,7 +15,7 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    image: brackets-by-triad/php7.1
+    image: brackets/php7.1
     environment:
       APP_ENV: "${APP_ENV}"
       XDEBUG_HOST: "${XDEBUG_HOST}"
@@ -59,7 +59,7 @@ services:
     build:
       context: ./docker/node
       dockerfile: Dockerfile
-    image: brackets-by-triad/node
+    image: brackets/node
     user: node
     volumes:
      - .:/var/www/html
