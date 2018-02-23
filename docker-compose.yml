@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     image: brackets/nginx
     ports:
-     - "${APP_PORT}:80"
+     - "${DOCKER_APP_PORT}:80"
     volumes:
      - .:/var/www/html
     networks:
@@ -27,7 +27,7 @@ services:
   pgsql:
     image: postgres:latest
     ports:
-     - "${PGSQL_PORT}:5432"
+     - "${DOCKER_PGSQL_PORT}:5432"
     environment:
       POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
@@ -44,13 +44,13 @@ services:
   testing:
     image: postgres:latest
     ports:
-     - "${PGSQL_TEST_PORT}:5432"
+     - "${DOCKER_PGSQL_TEST_PORT}:5432"
     environment:
       POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
       POSTGRES_DB: "${DB_DATABASE}"
     volumes:
-     - ${PGSQL_TEST_DIR}:/var/lib/postgresql/data
+     - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data
      - .:/opt
      - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     networks:
