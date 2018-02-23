@@ -65,7 +65,11 @@ if [ $# -gt 0 ]; then
 
         # caftable new
         # use php container to create craftable new without install
-        $DOCKER_PHP craftable new --no-install ./
+        $DOCKER_PHP craftable new --no-install ./application
+
+        # move application content to this folder
+        mv application/* application/.* .
+        rm -rf ./application
 
         # .env modify values
         if [ -f .env ]; then
@@ -77,13 +81,21 @@ if [ $# -gt 0 ]; then
             echo -e "PGSQL_PORT=5432\n" >> .env.example
             echo -e "PGSQL_TEST_DIR=./docker/testing/db\n" >> .env.example
 
-            echo -e "#docker-config\n" >> .env
-            echo -e "APP_PORT=8080\n" >> .env
-            echo -e "PGSQL_PORT=5432\n" >> .env
-            echo -e "PGSQL_TEST_DIR=./docker/testing/db\n" >> .env
+            echo -e "" >> .env
+            echo -e "#docker-config" >> .env
+            echo -e "APP_PORT=8080" >> .env
+            echo -e "PGSQL_PORT=5432" >> .env
+            echo -e "PGSQL_TEST_DIR=./docker/testing/db" >> .env
+
+            source .env
 
             $SEDCMD "s/APP_URL=.*/APP_URL=http:\/\/localhost:"$APP_PORT"/" .env
+            $SEDCMD "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
             $SEDCMD "s/DB_HOST=.*/DB_HOST=pgsql/" .env
+            $SEDCMD "s/DB_PORT=.*/DB_PORT=5432/" .env
+            $SEDCMD "s/DB_DATABASE=.*/DB_DATABASE=homestead/" .env
+            $SEDCMD "s/DB_USERNAME=.*/DB_USERNAME=homestead/" .env
+            $SEDCMD "s/DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
             $SEDCMD "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
             $SEDCMD "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
             $SEDCMD "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
@@ -135,6 +147,7 @@ if [ $# -gt 0 ]; then
             cp .env .env.bckp
 
             $SEDCMD "s/APP_URL=.*/APP_URL=http:\/\/localhost:"$APP_PORT"/" .env
+            $SEDCMD "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
             $SEDCMD "s/DB_HOST=.*/DB_HOST=pgsql/" .env
             $SEDCMD "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
             $SEDCMD "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
