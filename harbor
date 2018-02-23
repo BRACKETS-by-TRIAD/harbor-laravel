@@ -60,7 +60,7 @@ if [ $# -gt 0 ]; then
         source .env
     fi
 
-    if [ "$1" == "install" ]; then
+    if [ "$1" == "craftable" ]; then
         echo "This command is to install new craftable application to current folder"
 
         # caftable new
