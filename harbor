@@ -61,7 +61,7 @@ if [ $# -gt 0 ]; then
     fi
 
     if [ "$1" == "craftable" ]; then
-        echo "This command is to install new craftable application to current folder"
+        echo "This command will install new craftable application to current folder"
 
         # caftable new
         # use php container to create craftable new without install
@@ -131,7 +131,7 @@ if [ $# -gt 0 ]; then
 
     # Start up containers
     elif [ "$1" == "init" ]; then
-        echo "This command is to setup your docker environment for this laravel based project"
+        echo "This command will setup your docker environment for this laravel based project"
 
         if [ ! -f .env.example ]; then
             echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
@@ -200,9 +200,15 @@ if [ $# -gt 0 ]; then
     # If "artisan" or "art" is used, pass to "artisan" inside a new container
     elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
         shift 1
-        $COMPOSE run --rm \
-            php \
-            php artisan "$@"
+        if [ "$EXEC" == "yes" ]; then
+            $COMPOSE exec \
+                app \
+                php artisan "$@"
+        else
+            $COMPOSE run --rm \
+                app \
+                php artisan "$@"
+        fi
 
     # If "composer" or "comp" is used, pass to "composer" inside a new container
     elif [ "$1" == "composer" ] || [ "$1" == "comp" ]; then
