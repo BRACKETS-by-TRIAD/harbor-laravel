@@ -202,11 +202,11 @@ if [ $# -gt 0 ]; then
         shift 1
         if [ "$EXEC" == "yes" ]; then
             $COMPOSE exec \
-                app \
+                php \
                 php artisan "$@"
         else
             $COMPOSE run --rm \
-                app \
+                php \
                 php artisan "$@"
         fi
 
