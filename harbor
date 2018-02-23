@@ -213,9 +213,15 @@ if [ $# -gt 0 ]; then
     # If "composer" or "comp" is used, pass to "composer" inside a new container
     elif [ "$1" == "composer" ] || [ "$1" == "comp" ]; then
         shift 1
-        $COMPOSE run --rm \
-            php \
-            composer "$@"
+        if [ "$EXEC" == "yes" ]; then
+            $COMPOSE exec \
+                php \
+                composer "$@"
+        else
+            $COMPOSE run --rm \
+                php \
+                composer "$@"
+        fi
 
     # If "test" is used, run unit tests, pass any extra arguments to phpunit
     elif [ "$1" == "test" ]; then
