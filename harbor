@@ -163,6 +163,7 @@ if [ $# -gt 0 ]; then
 
         # composer require predis and install - in a composer container
         $DOCKER_PHP composer require predis/predis
+        $DOCKER_PHP composer install
 
         # vs art key:generate
         source .env

@@ -31,4 +31,8 @@ if [ ! -d /.composer ]; then
 fi
 chmod -R ugo+rw /.composer
 
+if [ -f /root/.ssh/id_rsa ]; then
+    chmod -R 0600 /root/.ssh/id_rsa
+fi
+
 exec "$@"
