@@ -21,6 +21,7 @@ services:
       XDEBUG_HOST: "${XDEBUG_HOST}"
     volumes:
      - .:/var/www/html
+     - ./docker/php/ssh:/root/.ssh
      - psyhistory:/root/.config
     networks:
      - harbornet
