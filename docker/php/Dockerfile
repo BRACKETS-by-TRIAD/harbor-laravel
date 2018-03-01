@@ -19,6 +19,7 @@ RUN apt-get update \
        php7.1-imagick php7.1-zip php7.1-bcmath php7.1-xdebug php7.1-soap \
     && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && mkdir /run/php \
+    && composer global require "laravel/installer" \
     && composer global require "brackets/craftable-installer" \
     && apt-get remove -y --purge software-properties-common \
     && apt-get -y autoremove \

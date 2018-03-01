@@ -36,7 +36,6 @@ services:
       PGPASSWORD: "${PGPASSWORD}"
     volumes:
      - pgsqldata:/var/lib/postgresql/data
-     - .:/opt
      - ./docker/pgsql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
      - ./docker/pgsql/export:/export
      - ./docker/pgsql/import:/import
@@ -50,9 +49,9 @@ services:
       POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
       POSTGRES_DB: "${DB_DATABASE}"
+      PGPASSWORD: "${PGPASSWORD}"
     volumes:
      - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data
-     - .:/opt
      - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     networks:
      - harbornet
