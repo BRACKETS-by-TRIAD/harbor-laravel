@@ -190,7 +190,12 @@ if [ $# -gt 0 ]; then
 
             # caftable new
             # use php container to create craftable new without install
-            $DOCKER_PHP craftable new --no-install ./application
+            if [ "$3" == "--dev" ]; then
+                $DOCKER_PHP craftable new --dev --no-install ./application
+            else
+                $DOCKER_PHP craftable new --no-install ./application
+            fi
+
 
             # move application content to this folder
             mv application/* application/.* .
