@@ -35,8 +35,4 @@ if [ -f /root/.ssh/id_rsa ]; then
     chmod -R 0600 /root/.ssh/id_rsa
 fi
 
-if [ -f /root/.bash_profile ]; then
-    source /root/.bash_profile
-fi
-
 exec "$@"
