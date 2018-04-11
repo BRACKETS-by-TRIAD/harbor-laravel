@@ -62,73 +62,73 @@ This will start all the docker containers and set up network and volumes correct
 
 You can make any changes in .env file, but some changes (i.e. DB_PASSWORD, but you probably don't want to change these variables anyway) may require to destroy volumes and/or rebuild docker containers:
 
-`harbord rebuild`
+`harbor rebuild`
 
 # Daily usage #
 
 In this section you can find all commands supported by harbor.
 
-`harbord start`
+`harbor start`
 
 Starts all containers based on docker-compose.yml file.
 
-`harbord stop`
+`harbor stop`
 
 Stops and destroy all containers.
 
-`harbord restart`
+`harbor restart`
 
 Stops and destroy and then starts again all containers.
 
-`harbord rebuild`
+`harbor rebuild`
 
 Stops and destroy all containers also with volumes, delete testing database path, rebuild docker images and then starts again all containers.
 
-`harbord artisan` OR `harbord art`
+`harbor artisan` OR `harbor art`
 
-Passes all additional arguments to php container to php artisan command, e.g. `harbord art make:migration` goes to php docker container and call `php artisan make:migration`.
+Passes all additional arguments to php container to php artisan command, e.g. `harbor art make:migration` goes to php docker container and call `php artisan make:migration`.
 
-`harbord composer` OR `harbord comp`
+`harbor composer` OR `harbor comp`
 
-Passes all additional arguments to php container to composer command, e.g. `harbord comp require brackets/craftable` goes to php docker container and call `composer require brackets/craftable`.
+Passes all additional arguments to php container to composer command, e.g. `harbor comp require brackets/craftable` goes to php docker container and call `composer require brackets/craftable`.
 
-`harbord test`
+`harbor test`
 
 Run phpunit tests on new php container. All additional arguments are passed to phpunit.
 
-`harbord npm`
+`harbor npm`
 
 Run npm command on node container and pass all additional arguments to npm.
 
-`harbord yarn`
+`harbor yarn`
 
 Run yarn command on node container and pass all additional arguments to yarn.
 
-`harbord gulp`
+`harbor gulp`
 
 Run gulp command on node container from node modules and pass all additional arguments to gulp.
 
-`harbord psql`
+`harbor psql`
 
 Run psql command on pgsql container with username and host form .env file and pass all additional arguments to psql command.
 
-`harbord pg_dump`
+`harbor pg_dump`
 
 Run pg_dump command on pgsql container with username and host form .env file and pass all additional arguments to pg_dump command.
 
-`harbord laravel new`
+`harbor laravel new`
 
 Will install laravel application to current folder. See section #Let's add some code
 
-`harbord laravel init`
+`harbor laravel init`
 
 Will init harbor for laravel application. See section #Let's add some code
 
-`harbord craftable new`
+`harbor craftable new`
 
 Will install craftable application to current folder. See section #Let's add some code.
 
-`harbord craftable init`
+`harbor craftable init`
 
 Will init harbor for craftable application. See section #Let's add some code.
 

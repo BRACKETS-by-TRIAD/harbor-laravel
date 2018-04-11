@@ -24,7 +24,8 @@ RUN apt-get update \
     && apt-get remove -y --purge software-properties-common \
     && apt-get -y autoremove \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && echo 'export PATH="$PATH:/root/.composer/vendor/bin"' >> /root/.bash_profile
 
 COPY php-fpm.conf /etc/php/7.1/fpm/php-fpm.conf
 COPY www.conf /etc/php/7.1/fpm/pool.d/www.conf
