@@ -9,7 +9,7 @@ Harbor provides docker configuration for your project. It consist of
 * node container,
 * redis container
 
-## Adding Harbor ##
+## Adding harbor ##
 
 In order to initialize harbor to the existing project or when starting a new project (in empty folder) use
 `harbor add`
