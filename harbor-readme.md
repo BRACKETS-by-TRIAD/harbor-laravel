@@ -1,9 +1,20 @@
-# Adding Harbor #
+# Harbor #
+
+Harbor provides docker configuration for your project. It consist of
+ 
+* nginx container, 
+* php container, 
+* postgres container, 
+* testing postgres container,
+* node container,
+* redis container
+
+## Adding Harbor ##
 
 In order to initialize harbor to the existing project or when starting a new project (in empty folder) use
 `harbor add`
 
-# Let's add some code #
+## Let's add some code ##
 
 A) If you have an existing Laravel/Craftable project and it does not matter if it has already been initialized (.env file exists, composer was installed, ...) or not, you just have to run
 
@@ -53,7 +64,7 @@ D) I don't want to add my own code. In this case, you can skipt the initializati
 
 `harbor start` 
 
-# Starting a harbor (docker) #
+## Starting a harbor (docker) ##
 
 To start the docker environment use:
 `harbor start`
@@ -64,7 +75,7 @@ You can make any changes in .env file, but some changes (i.e. DB_PASSWORD, but y
 
 `harbor rebuild`
 
-# Daily usage #
+## Daily usage ##
 
 In this section you can find all commands supported by harbor.
 
@@ -131,16 +142,3 @@ Will install craftable application to current folder. See section #Let's add som
 `harbor craftable init`
 
 Will init harbor for craftable application. See section #Let's add some code.
-
-
-
-
-
-
-
-
-
-
-
-
-
