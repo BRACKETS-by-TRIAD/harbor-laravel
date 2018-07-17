@@ -14,9 +14,9 @@ RUN apt-get update \
     && apt-get install -y curl zip unzip git software-properties-common \
     && add-apt-repository -y ppa:ondrej/php \
     && apt-get update \
-    && apt-get install -y php7.1-fpm php7.1-cli php7.1-mcrypt php7.1-gd \
-       php7.1-pgsql php7.1-imap php-memcached php7.1-mbstring php7.1-xml php7.1-curl \
-       php7.1-imagick php7.1-zip php7.1-bcmath php7.1-xdebug php7.1-soap \
+    && apt-get install -y php7.2-fpm php7.2-cli php7.2-mcrypt php7.2-gd \
+       php7.2-pgsql php7.2-imap php-memcached php7.2-mbstring php7.2-xml php7.2-curl \
+       php7.2-imagick php7.2-zip php7.2-bcmath php7.2-xdebug php7.2-soap \
     && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && mkdir /run/php \
     && composer global require "laravel/installer" \
@@ -28,9 +28,9 @@ RUN apt-get update \
 
 ENV PATH "$PATH:/root/.composer/vendor/bin"
 
-COPY php-fpm.conf /etc/php/7.1/fpm/php-fpm.conf
-COPY www.conf /etc/php/7.1/fpm/pool.d/www.conf
-COPY xdebug.ini /etc/php/7.1/mods-available/xdebug.ini
+COPY php-fpm.conf /etc/php/7.2/fpm/php-fpm.conf
+COPY www.conf /etc/php/7.2/fpm/pool.d/www.conf
+COPY xdebug.ini /etc/php/7.2/mods-available/xdebug.ini
 
 RUN mkdir /root/.config \
     && chown -R root:root /root/.config
@@ -44,5 +44,5 @@ WORKDIR /var/www/html
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-CMD ["php-fpm7.1"]
+CMD ["php-fpm7.2"]
 

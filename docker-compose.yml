@@ -15,7 +15,7 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    image: brackets/php7.1
+    image: brackets/php7.2
     environment:
       APP_ENV: "${APP_ENV}"
       XDEBUG_HOST: "${XDEBUG_HOST}"
