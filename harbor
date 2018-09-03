@@ -221,7 +221,7 @@ if [ $# -gt 0 ]; then
                     echo -e "DOCKER_APP_PORT="$DOCKER_APP_PORT"\n" >> .env.example
                     echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"\n" >> .env.example
                     echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"\n" >> .env.example
-                    echo -e "DOCKER_PGSQL_TEST_DIR=."$DOCKER_PGSQL_TEST_DIR"\n" >> .env.example
+                    echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"\n" >> .env.example
                 fi
 
                 if [grep -q "#docker-config" ".env"]; then
