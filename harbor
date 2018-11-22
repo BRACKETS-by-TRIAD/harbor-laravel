@@ -120,8 +120,7 @@ if [ $# -gt 0 ]; then
             ;;
 
         # If "artisan" or "art" is used, pass to "artisan" inside a container
-        artisan)
-        art)
+        artisan|art)
             shift 1
             if [ "$EXEC" == "yes" ]; then
                 $COMPOSE exec \
@@ -135,8 +134,7 @@ if [ $# -gt 0 ]; then
             ;;
 
         # If "composer" or "comp" is used, pass to "composer" inside a container
-        composer)
-        comp)
+        composer|comp)
             shift 1
             if [ "$EXEC" == "yes" ]; then
                 $COMPOSE exec \
