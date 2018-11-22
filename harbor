@@ -243,9 +243,9 @@ if [ $# -gt 0 ]; then
             fi
 
             # composer require predis and install - in a composer container
-            # TODO need to be tested
-            $DOCKER_PHP composer require predis/predis (exit \$?)
-            $DOCKER_PHP composer install (exit \$?)
+            # TODO need to be tested, not working yet (exit \$?)
+            $DOCKER_PHP composer require predis/predis
+            $DOCKER_PHP composer install
 
             # source actual env values
             source .env
