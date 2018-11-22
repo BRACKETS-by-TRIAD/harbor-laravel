@@ -38,7 +38,7 @@ chmod +x ./harbor
 export DOCKER_APP_PORT=${DOCKER_APP_PORT:-80}
 export DOCKER_PGSQL_PORT=${DOCKER_PGSQL_PORT:-5432}
 export DOCKER_PGSQL_TEST_PORT=${DOCKER_PGSQL_TEST_PORT:-5433}
-export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db/data}
+export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
 export DB_USERNAME=${DB_USERNAME:-homestead}
