@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# check system if supported
 UNAMEOUT="$(uname -s)"
 case "${UNAMEOUT}" in
     Linux*)     MACHINE=linux;;
@@ -16,7 +17,7 @@ if [ "$MACHINE" == "UNKNOWN" ]; then
     echo "Your reported uname is: $(uname -s)"
 fi
 
-# Set environment variables for dev
+# set xdebug host for developing
 if [ "$MACHINE" == "linux" ]; then
     export XDEBUG_HOST=$(/sbin/ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
     SEDCMD="sed -i"
@@ -33,17 +34,18 @@ fi
 # making harbor command available
 chmod +x ./harbor
 
+# prepare default env variables
 export DOCKER_APP_PORT=${DOCKER_APP_PORT:-80}
 export DOCKER_PGSQL_PORT=${DOCKER_PGSQL_PORT:-5432}
 export DOCKER_PGSQL_TEST_PORT=${DOCKER_PGSQL_TEST_PORT:-5433}
-export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db}
+export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db/data}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
 export DB_USERNAME=${DB_USERNAME:-homestead}
 export DB_PASSWORD=${DB_PASSWORD:-secret}
 export PGPASSWORD=${DB_PASSWORD}
 
-# Is the environment running
+# is the environment running
 PSRESULT="$(docker-compose ps -q)"
 if [ ! -z "$PSRESULT" ]; then
     EXEC="yes"
@@ -51,10 +53,14 @@ else
     EXEC="no"
 fi
 
-# Create base docker-compose command to run
+# create base docker-compose command to run
 COMPOSE="docker-compose -f docker-compose.yml"
+
+# create base php docker command to run
+# TODO what to do with php version?
 DOCKER_PHP="docker run --rm -it -v "$(pwd)":/var/www/html -v "$(pwd)/docker/php/ssh":/root/.ssh brackets/php7.2"
 
+# main script
 # If we pass any arguments...
 if [ $# -gt 0 ]; then
 
@@ -63,146 +69,156 @@ if [ $# -gt 0 ]; then
         source .env
     fi
 
-    # Start up containers
-    if [ "$1" == "start" ]; then
-        # creating dir for testing database if not exists already
-        if [ ! -d ${DOCKER_PGSQL_TEST_DIR} ]; then
-            mkdir -p ${DOCKER_PGSQL_TEST_DIR}
-        fi
-        $COMPOSE up -d
+    case "$1" in
 
-    # Stop the containers
-    elif [ "$1" == "stop" ]; then
-        $COMPOSE down
+        # Start up containers
+        start)
+            # creating dir for testing database if not exists already
+            if [ ! -d ${DOCKER_PGSQL_TEST_DIR} ]; then
+                mkdir -p ${DOCKER_PGSQL_TEST_DIR}
+            fi
+            $COMPOSE up -d
+            ;;
 
-    # Restart the containers
-    elif [ "$1" == "restart" ]; then
-        if [ "$EXEC" == "yes" ]; then
-            ./harbor stop
-        fi
-        ./harbor start
+        # Stop the containers
+        stop)
+            $COMPOSE down
+            ;;
 
-    # Rebuild the containers
-    elif [ "$1" == "rebuild" ]; then
-        if [ "$EXEC" == "yes" ]; then
-            $COMPOSE down -v
-            rm -rf ${DOCKER_PGSQL_TEST_DIR}/*
-        fi
-        $COMPOSE build
-        ./harbor start
+        # Restart the containers
+        restart)
+            if [ "$EXEC" == "yes" ]; then
+                ./harbor stop
+            fi
+            ./harbor start
+            ;;
 
-    # If "artisan" or "art" is used, pass to "artisan" inside a container
-    elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
-        shift 1
-        if [ "$EXEC" == "yes" ]; then
-            $COMPOSE exec \
-                php \
-                php artisan "$@"
-        else
-            $COMPOSE run --rm \
-                php \
-                php artisan "$@"
-        fi
+        # Rebuild the containers
+        rebuild)
+            if [ "$EXEC" == "yes" ]; then
+                shift 1
+                DOWN_PARAMS=""
+                for i in "$@"
+                do
+                    case $i in
+                        -d=*|--database)
+                            DATABASE=true
+                            ;;
+                        -i=*|--images)
+                            DOWN_PARAMS="--rmi all"
+                        ;;
+                        *)
+                        ;;
+                    esac
+                done
+                $COMPOSE down -v $DOWN_PARAMS
+                if [ "$DATABASE" == "true" ]; then
+                    rm -rf ${DOCKER_PGSQL_TEST_DIR}/*
+                fi
+            fi
+            $COMPOSE build
+            ;;
 
-    # If "composer" or "comp" is used, pass to "composer" inside a container
-    elif [ "$1" == "composer" ] || [ "$1" == "comp" ]; then
-        shift 1
-        if [ "$EXEC" == "yes" ]; then
-            $COMPOSE exec \
-                php \
-                composer "$@"
-        else
-            $COMPOSE run --rm \
-                php \
-                composer "$@"
-        fi
-
-    # If "test" is used, run unit tests, pass any extra arguments to phpunit
-    elif [ "$1" == "test" ]; then
-        shift 1
-        export APP_ENV="testing"
-        $COMPOSE run --rm \
-            php \
-            ./vendor/bin/phpunit "$@"
-
-    # If "npm" is used, run npm from our node container
-    elif [ "$1" == "npm" ]; then
-        shift 1
-        $COMPOSE run --rm \
-            node \
-            npm "$@"
-
-    # If "yarn" is used, run yarn from our node container
-    elif [ "$1" == "yarn" ]; then
-        shift 1
-        $COMPOSE run --rm \
-            node \
-            yarn "$@"
-
-    # If "gulp" is used, run gulp from our node container
-    elif [ "$1" == "gulp" ]; then
-        shift 1
-        $COMPOSE run --rm \
-            node \
-            ./node_modules/.bin/gulp "$@"
-
-    # If "psql" is used, run psql from our existing pgsql container
-    elif [ "$1" == "psql" ]; then
-        shift 1
-        if [ "$EXEC" == "yes" ]; then
-            $COMPOSE exec \
-                pgsql \
-                psql -U $DB_USERNAME -h localhost $DB_DATABASE "$@"
-        fi
-
-    # If "pg_dump" is used, run pg_dump from our existing pgsql container
-    elif [ "$1" == "pg_dump" ]; then
-        shift 1
-        if [ "$EXEC" == "yes" ]; then
-            $COMPOSE exec \
-                pgsql \
-                pg_dump -U $DB_USERNAME -h localhost $DB_DATABASE "$@"
-        fi
-
-    # Installing laravel or initialize laravel project for harbor
-    elif [ "$1" == "laravel" ]; then
-        if [ "$2" == "new" ]; then
-            echo "This command will install new laravel application to current folder"
-
-            # laravel new
-            # use php container to create craftable new without install
-            $DOCKER_PHP laravel new ./application
-
-            # move application content to this folder
-            mv application/* application/.* .
-            rm -rf ./application
-
-            ./harbor init
-
-        elif [ "$2" == "init" ]; then
-            ./harbor init
-        fi
-
-    # Installing craftable or initialize craftable project for harbor
-    elif [ "$1" == "craftable" ]; then
-        if [ "$2" == "new" ]; then
-            echo "This command will install new craftable application to current folder"
-
-            # caftable new
-            # use php container to create craftable new without install
-            if [ "$3" == "--dev" ]; then
-                $DOCKER_PHP craftable new --dev --no-install ./application
+        # If "artisan" or "art" is used, pass to "artisan" inside a container
+        artisan)
+        art)
+            shift 1
+            if [ "$EXEC" == "yes" ]; then
+                $COMPOSE exec \
+                    php \
+                    php artisan "$@"
             else
-                $DOCKER_PHP craftable new --no-install ./application
+                $COMPOSE run --rm \
+                    php \
+                    php artisan "$@"
+            fi
+            ;;
+
+        # If "composer" or "comp" is used, pass to "composer" inside a container
+        composer)
+        comp)
+            shift 1
+            if [ "$EXEC" == "yes" ]; then
+                $COMPOSE exec \
+                    php \
+                    composer "$@"
+            else
+                $COMPOSE run --rm \
+                    php \
+                    composer "$@"
+            fi
+            ;;
+
+        # If "test" is used, run unit tests, pass any extra arguments to phpunit
+        test)
+            shift 1
+            export APP_ENV="testing"
+            $COMPOSE run --rm \
+                php \
+                ./vendor/bin/phpunit "$@"
+            ;;
+
+        # If "npm" is used, run npm from our node container
+        npm)
+            shift 1
+            $COMPOSE run --rm \
+                node \
+                npm "$@"
+            ;;
+
+        # If "yarn" is used, run yarn from our node container
+        yarn)
+            shift 1
+            $COMPOSE run --rm \
+                node \
+                yarn "$@"
+            ;;
+
+        # If "gulp" is used, run gulp from our node container
+        gulp)
+            shift 1
+            $COMPOSE run --rm \
+                node \
+                ./node_modules/.bin/gulp "$@"
+            ;;
+
+        # If "psql" is used, run psql from our existing pgsql container
+        psql)
+            shift 1
+            if [ "$EXEC" == "yes" ]; then
+                $COMPOSE exec \
+                    pgsql \
+                    psql -U $DB_USERNAME -h localhost $DB_DATABASE "$@"
+            fi
+            ;;
+
+        # If "pg_dump" is used, run pg_dump from our existing pgsql container
+        pg_dump)
+            shift 1
+            if [ "$EXEC" == "yes" ]; then
+                $COMPOSE exec \
+                    pgsql \
+                    pg_dump -U $DB_USERNAME -h localhost $DB_DATABASE "$@"
+            fi
+            ;;
+
+        # Initialize harbor for existing project
+        init)
+            echo "This command will setup your docker environment for this laravel based project"
+
+            if [ ! -f .env.example ]; then
+                echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
+                exit 0
             fi
 
+            # cp .env.example .env if .env is missing
+            if [ ! -f .env ] && [ -f .env.example ]; then
+                cp .env.example .env
+            fi
 
-            # move application content to this folder
-            mv application/* application/.* .
-            rm -rf ./application
-
-            # .env modify values
+            # change values in .env file
             if [ -f .env ]; then
+                # source actual env values
                 source .env
 
                 # make backup of .env and add it to .gitignore file
@@ -211,38 +227,7 @@ if [ $# -gt 0 ]; then
                     echo -e ".env.bckp\n" >> .gitignore
                 fi
 
-                if [grep -q "#docker-config" ".env.example"]; then
-                    $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env.example
-                    $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env.example
-                    $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env.example
-                    $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env.example
-                else
-                    echo -e "#docker-config\n" >> .env.example
-                    echo -e "DOCKER_APP_PORT="$DOCKER_APP_PORT"\n" >> .env.example
-                    echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"\n" >> .env.example
-                    echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"\n" >> .env.example
-                    echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"\n" >> .env.example
-                fi
-
-                if [grep -q "#docker-config" ".env"]; then
-                    $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env
-                    $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env
-                    $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env
-                    $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env
-                else
-                    echo -e "#docker-config\n" >> .env
-                    echo -e "DOCKER_APP_PORT="$DOCKER_APP_PORT"\n" >> .env
-                    echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"\n" >> .env
-                    echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"\n" >> .env
-                    echo -e "DOCKER_PGSQL_TEST_DIR=."$DOCKER_PGSQL_TEST_DIR"\n" >> .env
-                fi
-
-                source .env
-
-                $SEDCMD "s/DB_DATABASE=.*/DB_DATABASE=homestead/" .env
-                $SEDCMD "s/DB_USERNAME=.*/DB_USERNAME=homestead/" .env
-                $SEDCMD "s/DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
-
+                # modify values
                 $SEDCMD "s/APP_URL=.*/APP_URL=http:\/\/localhost:"$DOCKER_APP_PORT"/" .env
 
                 $SEDCMD "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
@@ -259,18 +244,26 @@ if [ $# -gt 0 ]; then
                 fi
             fi
 
-            # add predis as required package
-            $DOCKER_PHP composer require predis/predis
-            $DOCKER_PHP composer install
+            # composer require predis and install - in a composer container
+            # TODO need to be tested
+            $DOCKER_PHP composer require predis/predis (exit \$?)
+            $DOCKER_PHP composer install (exit \$?)
 
             # source actual env values
             source .env
 
+            # art key:generate
+            if [[ -z "${APP_KEY}" ]]; then
+                $DOCKER_PHP php artisan key:generate
+                # source actual env values
+                source .env
+            fi
+
             # restart docker containers
             ./harbor restart
 
-            # install craftable
-            ./harbor art craftable:install
+            # migrate and seed
+            ./harbor art migrate --seed
 
             # npm install
             ./harbor npm install
@@ -278,79 +271,149 @@ if [ $# -gt 0 ]; then
             # npm run dev
             ./harbor npm run dev
 
-        elif [ "$2" == "init" ]; then
-            ./harbor init
-        fi
+            # stop docker containers
+            ./harbor stop
+            ;;
 
-    # Initialize harbor for existing project
-    elif [ "$1" == "init" ]; then
-        echo "This command will setup your docker environment for this laravel based project"
+        # Installing new laravel or craftable project
+        new)
+            case "$2" in
 
-        if [ ! -f .env.example ]; then
-            echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
-            exit 0
-        fi
+                # Installing new laravel project
+                laravel)
+                    echo "This command will install new laravel application to current folder"
 
-        # cp .env.example .env if .env is missing
-        if [ ! -f .env ] && [ -f .env.example ]; then
-            cp .env.example .env
-        fi
+                    # laravel new
+                    $DOCKER_PHP laravel new ./application
 
-        # change values in .env file
-        if [ -f .env ]; then
-            source .env
+                    # move application content to this folder
+                    mv application/* application/.[!.]* .
+                    rm -rf ./application
 
-            # make backup of .env and add it to .gitignore file
-            cp .env .env.bckp
-            if [ -f .gitignore ] && [grep -q ".env.bckp" "./.gitignore"]; then
-                echo -e ".env.bckp\n" >> .gitignore
-            fi
+                    ./harbor init
+                    ;;
 
-            $SEDCMD "s/APP_URL=.*/APP_URL=http:\/\/localhost:"$DOCKER_APP_PORT"/" .env
+                # Installing new craftable project
+                craftable)
+                    echo "This command will install new craftable application to current folder"
 
-            $SEDCMD "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
-            $SEDCMD "s/DB_HOST=.*/DB_HOST=pgsql/" .env
-            $SEDCMD "s/DB_PORT=.*/DB_PORT=5432/" .env
+                    # craftable new
+                    # use php container to create craftable new without install
+                    if [ "$3" == "--dev" ]; then
+                        $DOCKER_PHP craftable new --dev --no-install ./application
+                    else
+                        $DOCKER_PHP craftable new --no-install ./application
+                    fi
 
-            $SEDCMD "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
-            $SEDCMD "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
-            $SEDCMD "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
+                    # move application content to this folder
+                    mv application/* application/.[!.]* .
+                    rm -rf ./application
 
-            # removed bak file
-            if [ -f .env.bak ]; then
-                rm .env.bak
-            fi
-        fi
+                    # .env modify values
+                    if [ -f .env ]; then
+                        # source actual env values
+                        source .env
 
-        # composer require predis and install - in a composer container
-        $DOCKER_PHP composer require predis/predis
-        $DOCKER_PHP composer install
+                        # make backup of .env and add it to .gitignore file
+                        cp .env .env.bckp
+                        if [ -f .gitignore ] && [grep -q ".env.bckp" "./.gitignore"]; then
+                            echo -e ".env.bckp\n" >> .gitignore
+                        fi
 
-        # vs art key:generate
-        source .env
-        if [[ -z "${APP_KEY}" ]]; then
-            $DOCKER_PHP php artisan key:generate
-        fi
+                        # add or modify values in .env.example
+                        if [grep -q "#docker-config" ".env.example"]; then
+                            # modify values
+                            $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env.example
+                            $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env.example
+                            $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env.example
+                            $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env.example
+                        else
+                            # add values
+                            echo -e "#docker-config" >> .env.example
+                            echo -e "DOCKER_APP_PORT="$DOCKER_APP_PORT"" >> .env.example
+                            echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"" >> .env.example
+                            echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env.example
+                            echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env.example
+                        fi
 
-        # source actual env values
-        source .env
+                        # add or modify values in .env
+                        if [grep -q "#docker-config" ".env"]; then
+                            # modify values
+                            $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env
+                            $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env
+                            $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env
+                            $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env
+                        else
+                            # add values
+                            echo -e "#docker-config" >> .env
+                            echo -e "DOCKER_APP_PORT="$DOCKER_APP_PORT"" >> .env
+                            echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"" >> .env
+                            echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env
+                            echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env
+                        fi
 
-        # restart docker containers
-        ./harbor restart
+                        # source actual env values
+                        source .env
 
-        # migrate and seed
-        ./harbor art migrate --seed
+                        # modify values
+                        $SEDCMD "s/DB_DATABASE=.*/DB_DATABASE=homestead/" .env
+                        $SEDCMD "s/DB_USERNAME=.*/DB_USERNAME=homestead/" .env
+                        $SEDCMD "s/DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
 
-        # npm install
-        ./harbor npm install
+                        $SEDCMD "s/APP_URL=.*/APP_URL=http:\/\/localhost:"$DOCKER_APP_PORT"/" .env
 
-        # npm run dev
-        ./harbor npm run dev
+                        $SEDCMD "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
+                        $SEDCMD "s/DB_HOST=.*/DB_HOST=pgsql/" .env
+                        $SEDCMD "s/DB_PORT=.*/DB_PORT=5432/" .env
 
-    # Else, pass args to docker-compose
-    else
-        $COMPOSE "$@"
-    fi
+                        $SEDCMD "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
+                        $SEDCMD "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
+                        $SEDCMD "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
+
+                        # removed bak file
+                        if [ -f .env.bak ]; then
+                            rm .env.bak
+                        fi
+                    fi
+
+                    # composer require predis and install - in a composer container
+                    # TODO need to be tested
+                    $DOCKER_PHP composer require predis/predis (exit \$?)
+                    $DOCKER_PHP composer install (exit \$?)
+
+                    # source actual env values
+                    source .env
+
+                    # restart docker containers
+                    ./harbor restart
+
+                    # install craftable
+                    ./harbor art craftable:install
+
+                    # npm install
+                    ./harbor npm install
+
+                    # npm run dev
+                    ./harbor npm run dev
+
+                    # stop docker containers
+                    ./harbor stop
+                    ;;
+
+                # If not provided, show what to use
+                *)
+                    echo $"Usage: $0 $1 {laravel|craftable}"
+                    exit 1
+                    ;;
+            esac
+            ;;
+
+        # Else, pass args to docker-compose
+        *)
+            $COMPOSE "$@"
+            ;;
+
+    esac
 else
     # Use the docker-compose ps command if nothing else passed through
     $COMPOSE ps
