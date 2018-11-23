@@ -278,6 +278,9 @@ if [ $# -gt 0 ]; then
                 laravel)
                     echo "This command will install new laravel application to current folder"
 
+                    # remove all containers and volumes
+                    $COMPOSE down -v
+
                     # laravel new
                     $COMPOSE run --rm php laravel new ./application
 
@@ -292,6 +295,7 @@ if [ $# -gt 0 ]; then
                 craftable)
                     echo "This command will install new craftable application to current folder"
 
+                    # remove all containers and volumes
                     $COMPOSE down -v
 
                     # craftable new
