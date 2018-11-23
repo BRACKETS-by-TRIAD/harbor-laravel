@@ -318,7 +318,7 @@ if [ $# -gt 0 ]; then
                         fi
 
                         # add or modify values in .env.example
-                        if [ -z grep "#docker-config" ".env.example" ]; then
+                        if grep -Fxq "#docker-config" .env.example; then
                             # modify values
                             $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env.example
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env.example
@@ -336,7 +336,7 @@ if [ $# -gt 0 ]; then
                         fi
 
                         # add or modify values in .env
-                        if [ -z grep "#docker-config" ".env" ]; then
+                        if grep -Fxq "#docker-config" .env; then
                             # modify values
                             $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env
