@@ -57,12 +57,6 @@ fi
 # create base docker-compose command to run
 COMPOSE="docker-compose -f docker-compose.yml"
 
-# create base php docker command to run
-#if [[ "$(docker images -q brackets/php:${DOCKER_PHP_VERSION} 2> /dev/null)" == "" ]]; then
-#  docker build ./docker/php/${DOCKER_PHP_VERSION:-7.2}/Dockerfile
-#fi
-DOCKER_PHP="docker run --rm -it -v "$(pwd)":/var/www/html -v "$(pwd)/docker/php/ssh":/root/.ssh brackets/php:${DOCKER_PHP_VERSION}"
-
 # main script
 # If we pass any arguments...
 if [ $# -gt 0 ]; then
@@ -246,16 +240,16 @@ if [ $# -gt 0 ]; then
             fi
 
             # composer require predis and install - in a composer container
-            # TODO need to be tested, not working yet (exit \$?)
-            $DOCKER_PHP composer require predis/predis
-            $DOCKER_PHP composer install
+            # TODO somehow get response if finished ok  - (exit \$?) not working
+            $$COMPOSE run --rm php composer require predis/predis
+            $$COMPOSE run --rm php composer install
 
             # source actual env values
             source .env
 
             # art key:generate
             if [[ -z "${APP_KEY}" ]]; then
-                $DOCKER_PHP php artisan key:generate
+                $$COMPOSE run --rm php php artisan key:generate
                 # source actual env values
                 source .env
             fi
@@ -285,10 +279,7 @@ if [ $# -gt 0 ]; then
                     echo "This command will install new laravel application to current folder"
 
                     # laravel new
-                    $COMPOSE run --rm \
-                        php \
-                        laravel new ./application
-#                    $DOCKER_PHP laravel new ./application
+                    $COMPOSE run --rm php laravel new ./application
 
                     # move application content to this folder
                     mv application/* application/.[!.]* .
@@ -304,9 +295,9 @@ if [ $# -gt 0 ]; then
                     # craftable new
                     # use php container to create craftable new without install
                     if [ "$3" == "--dev" ]; then
-                        $DOCKER_PHP craftable new --dev --no-install ./application
+                        $COMPOSE run --rm php craftable new --dev --no-install ./application
                     else
-                        $DOCKER_PHP craftable new --no-install ./application
+                        $COMPOSE run --rm php craftable new --no-install ./application
                     fi
 
                     # move application content to this folder
@@ -385,9 +376,9 @@ if [ $# -gt 0 ]; then
                     fi
 
                     # composer require predis and install - in a composer container
-                    # TODO need to be tested, not working yet (exit \$?)
-                    $DOCKER_PHP composer require predis/predis
-                    $DOCKER_PHP composer install
+                    # TODO somehow get response if finished ok  - (exit \$?) not working
+                    $COMPOSE run --rm php composer require predis/predis
+                    $COMPOSE run --rm php composer install
 
                     # source actual env values
                     source .env
