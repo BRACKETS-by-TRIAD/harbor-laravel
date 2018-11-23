@@ -218,7 +218,7 @@ if [ $# -gt 0 ]; then
 
                 # make backup of .env and add it to .gitignore file
                 cp .env .env.bckp
-                if [ -f .gitignore ] && [grep -q ".env.bckp" "./.gitignore"]; then
+                if [ -f .gitignore ] && [ -z grep ".env.bckp" "./.gitignore" ]; then
                     echo -e ".env.bckp\n" >> .gitignore
                 fi
 
@@ -292,6 +292,8 @@ if [ $# -gt 0 ]; then
                 craftable)
                     echo "This command will install new craftable application to current folder"
 
+                    $COMPOSE down -v
+
                     # craftable new
                     # use php container to create craftable new without install
                     if [ "$3" == "--dev" ]; then
@@ -311,12 +313,12 @@ if [ $# -gt 0 ]; then
 
                         # make backup of .env and add it to .gitignore file
                         cp .env .env.bckp
-                        if [ -f .gitignore ] && [grep -q ".env.bckp" "./.gitignore"]; then
+                        if [ -f .gitignore ] && [ -z grep ".env.bckp" "./.gitignore" ]; then
                             echo -e ".env.bckp\n" >> .gitignore
                         fi
 
                         # add or modify values in .env.example
-                        if [grep -q "#docker-config" ".env.example"]; then
+                        if [ -z grep "#docker-config" ".env.example" ]; then
                             # modify values
                             $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env.example
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env.example
@@ -334,7 +336,7 @@ if [ $# -gt 0 ]; then
                         fi
 
                         # add or modify values in .env
-                        if [grep -q "#docker-config" ".env"]; then
+                        if [ -z grep "#docker-config" ".env" ]; then
                             # modify values
                             $SEDCMD "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="$DOCKER_APP_PORT"/" .env
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env
