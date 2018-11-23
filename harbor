@@ -98,10 +98,10 @@ if [ $# -gt 0 ]; then
                 for i in "$@"
                 do
                     case $i in
-                        -d=*|--database)
+                        -d|--database)
                             DATABASE=true
                             ;;
-                        -i=*|--images)
+                        -i|--images)
                             DOWN_PARAMS="--rmi all"
                         ;;
                         *)
@@ -218,8 +218,10 @@ if [ $# -gt 0 ]; then
 
                 # make backup of .env and add it to .gitignore file
                 cp .env .env.bckp
-                if [ -f .gitignore ] && [ -z grep ".env.bckp" "./.gitignore" ]; then
-                    echo -e ".env.bckp\n" >> .gitignore
+                if [ -f .gitignore ]; then
+                    if grep -Fxq ".env.bckp" .gitignore; then
+                        echo -e ".env.bckp\n" >> .gitignore
+                    fi
                 fi
 
                 # modify values
@@ -317,8 +319,10 @@ if [ $# -gt 0 ]; then
 
                         # make backup of .env and add it to .gitignore file
                         cp .env .env.bckp
-                        if [ -f .gitignore ] && [ -z grep ".env.bckp" "./.gitignore" ]; then
-                            echo -e ".env.bckp\n" >> .gitignore
+                        if [ -f .gitignore ]; then
+                            if grep -Fxq ".env.bckp" .gitignore; then
+                                echo -e ".env.bckp\n" >> .gitignore
+                            fi
                         fi
 
                         # add or modify values in .env.example
