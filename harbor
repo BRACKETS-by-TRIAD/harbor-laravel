@@ -58,7 +58,9 @@ fi
 COMPOSE="docker-compose -f docker-compose.yml"
 
 # create base php docker command to run
-# TODO what to do with php version?
+if [[ "$(docker images -q brackets/php:${DOCKER_PHP_VERSION} 2> /dev/null)" == "" ]]; then
+  docker build ./docker/php/${DOCKER_PHP_VERSION:-7.2}/Dockerfile
+fi
 DOCKER_PHP="docker run --rm -it -v "$(pwd)":/var/www/html -v "$(pwd)/docker/php/ssh":/root/.ssh brackets/php:${DOCKER_PHP_VERSION}"
 
 # main script
@@ -283,7 +285,10 @@ if [ $# -gt 0 ]; then
                     echo "This command will install new laravel application to current folder"
 
                     # laravel new
-                    $DOCKER_PHP laravel new ./application
+                    $COMPOSE run --rm \
+                        php \
+                        laravel new ./application
+#                    $DOCKER_PHP laravel new ./application
 
                     # move application content to this folder
                     mv application/* application/.[!.]* .
