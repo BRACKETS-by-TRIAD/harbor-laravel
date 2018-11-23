@@ -39,6 +39,7 @@ export DOCKER_APP_PORT=${DOCKER_APP_PORT:-80}
 export DOCKER_PGSQL_PORT=${DOCKER_PGSQL_PORT:-5432}
 export DOCKER_PGSQL_TEST_PORT=${DOCKER_PGSQL_TEST_PORT:-5433}
 export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db}
+export DOCKER_PHP_VERSION=${DOCKER_PHP_VERSION:-7.2}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
 export DB_USERNAME=${DB_USERNAME:-homestead}
@@ -58,7 +59,7 @@ COMPOSE="docker-compose -f docker-compose.yml"
 
 # create base php docker command to run
 # TODO what to do with php version?
-DOCKER_PHP="docker run --rm -it -v "$(pwd)":/var/www/html -v "$(pwd)/docker/php/ssh":/root/.ssh brackets/php7.2"
+DOCKER_PHP="docker run --rm -it -v "$(pwd)":/var/www/html -v "$(pwd)/docker/php/ssh":/root/.ssh brackets/php:${DOCKER_PHP_VERSION}"
 
 # main script
 # If we pass any arguments...
@@ -325,6 +326,7 @@ if [ $# -gt 0 ]; then
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env.example
                             $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env.example
                             $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env.example
+                            $SEDCMD "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"/" .env.example
                         else
                             # add values
                             echo -e "#docker-config" >> .env.example
@@ -332,6 +334,7 @@ if [ $# -gt 0 ]; then
                             echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"" >> .env.example
                             echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env.example
                             echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env.example
+                            echo -e "DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"" >> .env.example
                         fi
 
                         # add or modify values in .env
@@ -341,6 +344,7 @@ if [ $# -gt 0 ]; then
                             $SEDCMD "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"/" .env
                             $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env
                             $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env
+                            $SEDCMD "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"/" .env
                         else
                             # add values
                             echo -e "#docker-config" >> .env
@@ -348,6 +352,7 @@ if [ $# -gt 0 ]; then
                             echo -e "DOCKER_PGSQL_PORT="$DOCKER_PGSQL_PORT"" >> .env
                             echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env
                             echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env
+                            echo -e "DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"" >> .env
                         fi
 
                         # source actual env values

@@ -13,11 +13,11 @@ services:
      - harbornet
   php:
     build:
-      context: ./docker/php
+      context: ./docker/php/${DOCKER_PHP_VERSION:-7.2}
       dockerfile: Dockerfile
-    image: brackets/php7.2:7.2
+    image: brackets/php:${DOCKER_PHP_VERSION:-7.2}
     environment:
-      APP_ENV: "${APP_ENV}"
+      APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${XDEBUG_HOST}"
     volumes:
      - .:/var/www/html
