@@ -94,21 +94,28 @@ if [ $# -gt 0 ]; then
         rebuild)
             if [ "$EXEC" == "yes" ]; then
                 shift 1
-                DOWN_PARAMS=""
+                REMOVE_IMAGES=""
+                REMOVE_VOLUMES=""
                 for i in "$@"
                 do
                     case $i in
                         -d|--database)
                             DATABASE=true
                             ;;
+
                         -i|--images)
-                            DOWN_PARAMS="--rmi all"
-                        ;;
+                            REMOVE_IMAGES="--rmi all"
+                            ;;
+
+                        -v|--volumes)
+                            REMOVE_VOLUMES="-v"
+                            ;;
+
                         *)
-                        ;;
+                            ;;
                     esac
                 done
-                $COMPOSE down -v $DOWN_PARAMS
+                $COMPOSE down $REMOVE_VOLUMES $REMOVE_IMAGES
                 if [ "$DATABASE" == "true" ]; then
                     rm -rf ${DOCKER_PGSQL_TEST_DIR}/*
                 fi
