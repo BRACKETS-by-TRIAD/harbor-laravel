@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! "production" == "$APP_ENV" ] && [ ! "prod" == "$APP_ENV" ] && [ ! "testing" == "$APP_ENV" ]; then
+if [ ! "production" == "$APP_ENV" ] && [ ! "prod" == "$APP_ENV" ] && [ ! "testing" == "$APP_ENV" ] && [ "on" == "$DOCKER_PHP_XDEBUG" ]; then
     # Enable xdebug
 
     ## FPM

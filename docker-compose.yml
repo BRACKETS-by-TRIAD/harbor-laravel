@@ -9,6 +9,7 @@ services:
      - "${DOCKER_APP_PORT}:80"
     volumes:
      - .:/var/www/html
+     - node_modules:/var/www/html/node_modules
     networks:
      - harbornet
   php:
@@ -19,10 +20,12 @@ services:
     environment:
       APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${XDEBUG_HOST}"
+      DOCKER_PHP_XDEBUG: "${DOCKER_PHP_XDEBUG:-off}"
     volumes:
      - .:/var/www/html
      - ./docker/php/ssh:/root/.ssh
      - psyhistory:/root/.config
+     - node_modules:/var/www/html/node_modules
     networks:
      - harbornet
   pgsql:
@@ -63,6 +66,7 @@ services:
     user: node
     volumes:
      - .:/var/www/html
+     - vendor:/var/www/html/vendor
     networks:
      - harbornet
   redis:
@@ -80,4 +84,8 @@ volumes:
   redisdata:
     driver: "local"
   psyhistory:
+    driver: "local"
+  node_modules:
+    driver: "local"
+  vendor:
     driver: "local"

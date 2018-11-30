@@ -40,6 +40,7 @@ export DOCKER_PGSQL_PORT=${DOCKER_PGSQL_PORT:-5432}
 export DOCKER_PGSQL_TEST_PORT=${DOCKER_PGSQL_TEST_PORT:-5433}
 export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db}
 export DOCKER_PHP_VERSION=${DOCKER_PHP_VERSION:-7.2}
+export DOCKER_PHP_XDEBUG=${DOCKER_PHP_XDEBUG:-off}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
 export DB_USERNAME=${DB_USERNAME:-homestead}
@@ -92,6 +93,7 @@ if [ $# -gt 0 ]; then
 
         # Rebuild the containers
         rebuild)
+            ./harbor start
             if [ "$EXEC" == "yes" ]; then
                 shift 1
                 REMOVE_IMAGES=""
@@ -340,6 +342,7 @@ if [ $# -gt 0 ]; then
                             $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env.example
                             $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env.example
                             $SEDCMD "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"/" .env.example
+                            $SEDCMD "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="$DOCKER_PHP_XDEBUG"/" .env.example
                         else
                             # add values
                             echo -e "#docker-config" >> .env.example
@@ -348,6 +351,7 @@ if [ $# -gt 0 ]; then
                             echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env.example
                             echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env.example
                             echo -e "DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"" >> .env.example
+                            echo -e "DOCKER_PHP_XDEBUG="$DOCKER_PHP_XDEBUG"" >> .env.example
                         fi
 
                         # add or modify values in .env
@@ -358,6 +362,7 @@ if [ $# -gt 0 ]; then
                             $SEDCMD "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"/" .env
                             $SEDCMD "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"/" .env
                             $SEDCMD "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"/" .env
+                            $SEDCMD "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="$DOCKER_PHP_XDEBUG"/" .env
                         else
                             # add values
                             echo -e "#docker-config" >> .env
@@ -366,6 +371,7 @@ if [ $# -gt 0 ]; then
                             echo -e "DOCKER_PGSQL_TEST_PORT="$DOCKER_PGSQL_TEST_PORT"" >> .env
                             echo -e "DOCKER_PGSQL_TEST_DIR="$DOCKER_PGSQL_TEST_DIR"" >> .env
                             echo -e "DOCKER_PHP_VERSION="$DOCKER_PHP_VERSION"" >> .env
+                            echo -e "DOCKER_PHP_XDEBUG="$DOCKER_PHP_XDEBUG"" >> .env
                         fi
 
                         # source actual env values
