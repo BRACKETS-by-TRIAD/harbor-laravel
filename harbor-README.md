@@ -1,6 +1,6 @@
 # Harbor #
 
-Harbor provides docker configuration for your project. It is based on vessel by Fideloper LLC - https://vessel.shippingdocker.com/. It consist of
+This harbor provides docker configuration for your project. It is based on vessel by Fideloper LLC - https://vessel.shippingdocker.com/. It consist of
  
 * nginx container, 
 * php container, 
