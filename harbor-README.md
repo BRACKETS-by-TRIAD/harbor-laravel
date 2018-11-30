@@ -11,7 +11,7 @@ Harbor provides docker configuration for your project. It is based on vessel by 
 
 This script handles the current instance. To create new, install or update harbor, use harbor installer.
 
-## Let's init ##
+## Let's init Laravel/Craftable ##
 
 If you have an existing Laravel/Craftable project and you have not initialize this project, run 
 
@@ -33,6 +33,7 @@ make some some changes to .env file (setting correct DB_HOST and use PostgreSQL 
 ## Starting a harbor (docker) ##
 
 To start the docker environment use:
+
 `harbor start`
 
 This will start all the docker containers and set up network and volumes correctly. So now we can play around with empty PostgreSQL or php. Now you can point your browser to the http://localhost and you should be able to see a default `/` route maped to public/index.php.
@@ -75,6 +76,6 @@ In this section you can find all commands supported by harbor:
 
 ## Install command (use with care) ##
 
-`harbor laravel new` will install laravel application to current folder. See harbor installer, it is the recommended way.
+`harbor new laravel` will install laravel application to current folder. See harbor installer, it is the recommended way.
 
-`harbor craftable new` will install craftable application to current folder. See harbor installer, it is the recommended way.
+`harbor new craftable` will install craftable application to current folder. See harbor installer, it is the recommended way.
