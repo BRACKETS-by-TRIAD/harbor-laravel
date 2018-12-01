@@ -26,18 +26,21 @@ if [[ $(docker version --format '{{.Server.Version}}') > 18.03.0 ]]; then
 else
     if [[ "$MACHINE" == "linux" ]]; then
         export XDEBUG_HOST=$(/sbin/ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
-        SEDCMD="sed -i"
     elif [[ "$MACHINE" == "mac" ]]; then
         export XDEBUG_HOST=$(ipconfig getifaddr en0) # Ethernet
 
         if [[ -z "$XDEBUG_HOST" ]]; then
             export XDEBUG_HOST=$(ipconfig getifaddr en1) # Wifi
         fi
-
-        SEDCMD="sed -i .bak"
     fi
 fi
 
+# set sed command
+if [[ "$MACHINE" == "linux" ]]; then
+    SEDCMD="sed -i"
+elif [[ "$MACHINE" == "mac" ]]; then
+    SEDCMD="sed -i .bak"
+fi
 
 # making harbor command available
 chmod +x ./harbor
