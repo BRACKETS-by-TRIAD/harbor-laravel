@@ -72,15 +72,15 @@ COMPOSE="docker-compose -f docker-compose.yml"
 function testRunningContainers() {
     if [[ ! -z $(docker ps -q) ]]; then
         echo "You have some running containers. Are you sure that they are not blocking required ports: $DOCKER_APP_PORT, $DOCKER_PGSQL_PORT, $DOCKER_PGSQL_TEST_PORT ?"
-        echo "Do you wish to continue?"
-        select yn in "Yes" "No"; do
-            case ${yn} in
-                Yes)
-                    ;;
-                No)
-                    exit 0;;
-            esac
-        done
+        echo -n "Do you wish to continue (y/n)?"
+        old_stty_cfg=$(stty -g)
+        stty raw -echo ; answer=$(head -c 1) ; stty ${old_stty_cfg} # Careful playing with stty
+        if echo "$answer" | grep -iq "^y" ;then
+            echo "Continue ..."
+            ${COMPOSE} down
+        else
+            exit 0
+        fi
     fi
 }
 
@@ -319,6 +319,8 @@ if [[ $# -gt 0 ]]; then
 
                     # remove all containers and volumes
                     ${COMPOSE} down -v
+
+                    testRunningContainers
 
                     # laravel new
                     ${COMPOSE} run --rm php laravel new ./application
