@@ -69,7 +69,7 @@ fi
 # create base docker-compose command to run
 COMPOSE="docker-compose -f docker-compose.yml"
 
-function testRunningContainers() {
+function testRunningContainers {
     if [[ ! -z $(docker ps -q) ]]; then
         echo "You have some running containers. Are you sure that they are not blocking required ports: $DOCKER_APP_PORT, $DOCKER_PGSQL_PORT, $DOCKER_PGSQL_TEST_PORT ?"
         echo -n "Do you wish to continue (y/n)?"
@@ -81,6 +81,89 @@ function testRunningContainers() {
         else
             exit 0
         fi
+    fi
+}
+
+function modifyEnv {
+    if [[ -f .env ]]; then
+
+        # source actual env values
+        source .env
+
+        # modify values
+        ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:"${DOCKER_APP_PORT}"/" .env
+
+        ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
+        ${SEDCMD} "s/DB_HOST=.*/DB_HOST=pgsql/" .env
+        ${SEDCMD} "s/DB_PORT=.*/DB_PORT=5432/" .env
+        ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE="${DB_DATABASE}"/" .env
+        ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME="${DB_USERNAME}"/" .env
+        ${SEDCMD} "s/DB_PASSWORD=.*/DB_PASSWORD="${DB_PASSWORD}"/" .env
+
+        ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
+        ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
+        ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
+
+        # removed bak file
+        if [[ -f .env.bak ]]; then
+            rm .env.bak
+        fi
+    fi
+}
+
+function setHarborInEnv {
+
+    if [[ ! ".env" == "$1" ]] && [[ ! ".env.example" == "$1" ]]; then
+        return
+    fi
+
+    # source actual env values
+    if [[ ".env" == "$1" ]]; then
+        source .env
+    fi
+
+    echo "Adding values to $1 ..."
+    # add or modify values in .env/.env.example
+    if grep -Fxq "#docker-config" $1; then
+        echo "Docker config already in .env.example"
+    else
+        echo -e "#docker-config" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_APP_PORT" $1; then
+        ${SEDCMD} "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="${DOCKER_APP_PORT}"/" $1
+    else
+        echo -e "DOCKER_APP_PORT="${DOCKER_APP_PORT}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_PGSQL_PORT" $1; then
+        ${SEDCMD} "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"/" $1
+    else
+        echo -e "DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_PGSQL_TEST_PORT" $1; then
+        ${SEDCMD} "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"/" $1
+    else
+        echo -e "DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_PGSQL_TEST_DIR" $1; then
+        ${SEDCMD} "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"/" $1
+    else
+        echo -e "DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_PHP_VERSION" $1; then
+        ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" $1
+    else
+        echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_PHP_XDEBUG" $1; then
+        ${SEDCMD} "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"/" $1
+    else
+        echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> $1
     fi
 }
 
@@ -249,36 +332,9 @@ if [[ $# -gt 0 ]]; then
                 cp .env.example .env
             fi
 
+            echo "Changing .env ..."
             # change values in .env file
-            if [[ -f .env ]]; then
-                echo "Changing .env ..."
-                # source actual env values
-                source .env
-
-                # make backup of .env and add it to .gitignore file
-                cp .env .env.bckp
-                if [[ -f .gitignore ]]; then
-                    if grep -Fxq ".env.bckp" .gitignore; then
-                        echo -e ".env.bckp\n" >> .gitignore
-                    fi
-                fi
-
-                # modify values
-                ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:"${DOCKER_APP_PORT}"/" .env
-
-                ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
-                ${SEDCMD} "s/DB_HOST=.*/DB_HOST=pgsql/" .env
-                ${SEDCMD} "s/DB_PORT=.*/DB_PORT=5432/" .env
-
-                ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
-                ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
-                ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
-
-                # removed bak file
-                if [[ -f .env.bak ]]; then
-                    rm .env.bak
-                fi
-            fi
+            modifyEnv
 
             echo "Adding predis/predis ..."
             # composer require predis and install - in a composer container
@@ -336,7 +392,49 @@ if [[ $# -gt 0 ]]; then
                     rm -rf ./application
 
                     echo "Laravel installed, initializing ..."
-                    ./harbor init
+
+                    # setting harbor in .env and .env.example
+                    echo "Setting harbor in .env and .env.example..."
+                    setHarborInEnv .env.example
+                    setHarborInEnv .env
+
+                    echo "Changing .env ..."
+                    # change values in .env file
+                    modifyEnv
+
+                    echo "Adding predis/predis ..."
+                    # composer require predis and install - in a composer container
+                    # TODO somehow get response if finished ok  - (exit \$?) not working
+                    ${COMPOSE} run --rm php composer require predis/predis
+                    ${COMPOSE} run --rm php composer install
+
+                    # source actual env values
+                    source .env
+
+                    # art key:generate
+                    if [[ -z "${APP_KEY}" ]]; then
+                        ${COMPOSE} run --rm php php artisan key:generate
+                        # source actual env values
+                        source .env
+                    fi
+
+                    echo "Restarting containers ..."
+                    # restart docker containers
+                    ./harbor restart
+
+                    echo "Migrating ..."
+                    # migrate and seed
+                    ./harbor art migrate --seed
+
+                    echo "Npm ..."
+                    # npm install
+                    ./harbor npm install
+
+                    # npm run dev
+                    ./harbor npm run dev
+
+                    # stop docker containers
+                    ./harbor stop
                     ;;
 
                 # Installing new craftable project
@@ -361,84 +459,15 @@ if [[ $# -gt 0 ]]; then
                     rm -rf ./application
 
                     echo "Craftable installed, initializing ..."
-                    # .env modify values
-                    if [[ -f .env ]]; then
-                        # source actual env values
-                        source .env
 
-                        # make backup of .env and add it to .gitignore file
-                        cp .env .env.bckp
-                        if [[ -f .gitignore ]]; then
-                            if grep -Fxq ".env.bckp" .gitignore; then
-                                echo -e ".env.bckp\n" >> .gitignore
-                            fi
-                        fi
+                    # setting harbor in .env and .env.example
+                    echo "Setting harbor in .env and .env.example..."
+                    setHarborInEnv .env.example
+                    setHarborInEnv .env
 
-                        echo "Adding values to .env and .env.example ..."
-                        # add or modify values in .env.example
-                        if grep -Fxq "#docker-config" .env.example; then
-                            # modify values
-                            ${SEDCMD} "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="${DOCKER_APP_PORT}"/" .env.example
-                            ${SEDCMD} "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"/" .env.example
-                            ${SEDCMD} "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"/" .env.example
-                            ${SEDCMD} "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"/" .env.example
-                            ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" .env.example
-                            ${SEDCMD} "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"/" .env.example
-                        else
-                            # add values
-                            echo -e "#docker-config" >> .env.example
-                            echo -e "DOCKER_APP_PORT="${DOCKER_APP_PORT}"" >> .env.example
-                            echo -e "DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"" >> .env.example
-                            echo -e "DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"" >> .env.example
-                            echo -e "DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"" >> .env.example
-                            echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> .env.example
-                            echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> .env.example
-                        fi
-
-                        # add or modify values in .env
-                        if grep -Fxq "#docker-config" .env; then
-                            # modify values
-                            ${SEDCMD} "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="${DOCKER_APP_PORT}"/" .env
-                            ${SEDCMD} "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"/" .env
-                            ${SEDCMD} "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"/" .env
-                            ${SEDCMD} "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"/" .env
-                            ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" .env
-                            ${SEDCMD} "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"/" .env
-                        else
-                            # add values
-                            echo -e "#docker-config" >> .env
-                            echo -e "DOCKER_APP_PORT="${DOCKER_APP_PORT}"" >> .env
-                            echo -e "DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"" >> .env
-                            echo -e "DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"" >> .env
-                            echo -e "DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"" >> .env
-                            echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> .env
-                            echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> .env
-                        fi
-
-                        # source actual env values
-                        source .env
-
-                        echo "Changing .env ..."
-                        # modify values
-                        ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE=homestead/" .env
-                        ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME=homestead/" .env
-                        ${SEDCMD} "s/DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
-
-                        ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:"${DOCKER_APP_PORT}"/" .env
-
-                        ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
-                        ${SEDCMD} "s/DB_HOST=.*/DB_HOST=pgsql/" .env
-                        ${SEDCMD} "s/DB_PORT=.*/DB_PORT=5432/" .env
-
-                        ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=redis/" .env
-                        ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=redis/" .env
-                        ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=redis/" .env
-
-                        # removed bak file
-                        if [[ -f .env.bak ]]; then
-                            rm .env.bak
-                        fi
-                    fi
+                    echo "Changing .env ..."
+                    # change values in .env file
+                    modifyEnv
 
                     echo "Adding predis/predis ..."
                     # composer require predis and install - in a composer container
