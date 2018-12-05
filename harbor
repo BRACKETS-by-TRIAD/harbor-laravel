@@ -106,7 +106,8 @@ if [[ $# -gt 0 ]]; then
 
         # Stop the containers
         stop)
-            ${COMPOSE} down
+            shift 1
+            ${COMPOSE} down "$@"
             ;;
 
         # Restart the containers
