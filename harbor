@@ -234,7 +234,7 @@ if [[ $# -gt 0 ]]; then
 
         # Initialize harbor for existing project
         init)
-            echo "This command will setup your docker environment for this laravel based project"
+            echo "Setting up your docker environment for this laravel based project."
 
             testRunningContainers
 
@@ -250,6 +250,7 @@ if [[ $# -gt 0 ]]; then
 
             # change values in .env file
             if [[ -f .env ]]; then
+                echo "Changing .env ..."
                 # source actual env values
                 source .env
 
@@ -278,6 +279,7 @@ if [[ $# -gt 0 ]]; then
                 fi
             fi
 
+            echo "Adding predis/predis ..."
             # composer require predis and install - in a composer container
             # TODO somehow get response if finished ok  - (exit \$?) not working
             ${COMPOSE} run --rm php composer require predis/predis
@@ -293,12 +295,15 @@ if [[ $# -gt 0 ]]; then
                 source .env
             fi
 
+            echo "Restarting containers ..."
             # restart docker containers
             ./harbor restart
 
+            echo "Migrating ..."
             # migrate and seed
             ./harbor art migrate --seed
 
+            echo "Npm ..."
             # npm install
             ./harbor npm install
 
@@ -315,7 +320,7 @@ if [[ $# -gt 0 ]]; then
 
                 # Installing new laravel project
                 laravel)
-                    echo "This command will install new laravel application to current folder"
+                    echo "Installing new laravel application to current folder."
 
                     # remove all containers and volumes
                     ${COMPOSE} down -v
@@ -329,12 +334,13 @@ if [[ $# -gt 0 ]]; then
                     mv application/* application/.[!.]* .
                     rm -rf ./application
 
+                    echo "Laravel installed, initializing ..."
                     ./harbor init
                     ;;
 
                 # Installing new craftable project
                 craftable)
-                    echo "This command will install new craftable application to current folder"
+                    echo "Installing new craftable application to current folder."
 
                     # remove all containers and volumes
                     ${COMPOSE} down -v
@@ -353,6 +359,7 @@ if [[ $# -gt 0 ]]; then
                     mv application/* application/.[!.]* .
                     rm -rf ./application
 
+                    echo "Craftable installed, initializing ..."
                     # .env modify values
                     if [[ -f .env ]]; then
                         # source actual env values
@@ -366,6 +373,7 @@ if [[ $# -gt 0 ]]; then
                             fi
                         fi
 
+                        echo "Adding values to .env and .env.example ..."
                         # add or modify values in .env.example
                         if grep -Fxq "#docker-config" .env.example; then
                             # modify values
@@ -409,6 +417,7 @@ if [[ $# -gt 0 ]]; then
                         # source actual env values
                         source .env
 
+                        echo "Changing .env ..."
                         # modify values
                         ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE=homestead/" .env
                         ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME=homestead/" .env
@@ -430,6 +439,7 @@ if [[ $# -gt 0 ]]; then
                         fi
                     fi
 
+                    echo "Adding predis/predis ..."
                     # composer require predis and install - in a composer container
                     # TODO somehow get response if finished ok  - (exit \$?) not working
                     ${COMPOSE} run --rm php composer require predis/predis
@@ -438,12 +448,15 @@ if [[ $# -gt 0 ]]; then
                     # source actual env values
                     source .env
 
+                    echo "Restarting containers ..."
                     # restart docker containers
                     ./harbor restart
 
+                    echo "Installing craftable ..."
                     # install craftable
                     ./harbor art craftable:install
 
+                    echo "Npm ..."
                     # npm install
                     ./harbor npm install
 
@@ -452,6 +465,8 @@ if [[ $# -gt 0 ]]; then
 
                     # stop docker containers
                     ./harbor stop
+
+                    echo "All set."
                     ;;
 
                 # If not provided, show what to use
