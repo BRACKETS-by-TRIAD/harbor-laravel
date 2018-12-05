@@ -127,6 +127,7 @@ function setHarborInEnv {
     if grep -Fxq "#docker-config" $1; then
         echo "Docker config already in .env.example"
     else
+        echo -e "" >> $1
         echo -e "#docker-config" >> $1
     fi
 
