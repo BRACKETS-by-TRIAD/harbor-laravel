@@ -51,12 +51,13 @@ export DOCKER_PGSQL_PORT=${DOCKER_PGSQL_PORT:-5432}
 export DOCKER_PGSQL_TEST_PORT=${DOCKER_PGSQL_TEST_PORT:-5433}
 export DOCKER_PGSQL_TEST_DIR=${DOCKER_PGSQL_TEST_DIR:-./docker/testing/db}
 export DOCKER_PHP_VERSION=${DOCKER_PHP_VERSION:-7.2}
+export DOCKER_POSTGRES_VERSION=${DOCKER_POSTGRES_VERSION:-10}
+export DOCKER_NODE_VERSION=${DOCKER_NODE_VERSION:-8}
 export DOCKER_PHP_XDEBUG=${DOCKER_PHP_XDEBUG:-off}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
 export DB_USERNAME=${DB_USERNAME:-homestead}
 export DB_PASSWORD=${DB_PASSWORD:-secret}
-export PGPASSWORD=${DB_PASSWORD}
 
 # is the environment running
 PSRESULT="$(docker-compose ps -q)"
@@ -72,7 +73,7 @@ COMPOSE="docker-compose -f docker-compose.yml"
 function testRunningContainers {
     if [[ ! -z $(docker ps -q) ]]; then
         echo "You have some running containers. Are you sure that they are not blocking required ports: $DOCKER_APP_PORT, $DOCKER_PGSQL_PORT, $DOCKER_PGSQL_TEST_PORT ?"
-        echo -n "Do you wish to continue (y/n)?"
+        echo "Do you wish to continue (y/n)?"
         old_stty_cfg=$(stty -g)
         stty raw -echo ; answer=$(head -c 1) ; stty ${old_stty_cfg} # Careful playing with stty
         if echo "$answer" | grep -iq "^y" ;then
@@ -159,6 +160,18 @@ function setHarborInEnv {
         ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" $1
     else
         echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_POSTGRES_VERSION" $1; then
+        ${SEDCMD} "s/DOCKER_POSTGRES_VERSION=.*/DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"/" $1
+    else
+        echo -e "DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"" >> $1
+    fi
+
+    if grep -Fxq "DOCKER_NODE_VERSION" $1; then
+        ${SEDCMD} "s/DOCKER_NODE_VERSION=.*/DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"/" $1
+    else
+        echo -e "DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"" >> $1
     fi
 
     if grep -Fxq "DOCKER_PHP_XDEBUG" $1; then

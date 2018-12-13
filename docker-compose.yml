@@ -19,7 +19,7 @@ services:
     image: brackets/php:${DOCKER_PHP_VERSION:-7.2}
     environment:
       APP_ENV: "${APP_ENV:-local}"
-      XDEBUG_HOST: "${XDEBUG_HOST}"
+      XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
       DOCKER_PHP_XDEBUG: "${DOCKER_PHP_XDEBUG:-off}"
     volumes:
      - .:/var/www/html
@@ -29,14 +29,14 @@ services:
     networks:
      - harbornet
   pgsql:
-    image: postgres:10
+    image: postgres:${DOCKER_POSTGRES_VERSION:-10}
     ports:
      - "${DOCKER_PGSQL_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: "${DB_USERNAME}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD}"
-      POSTGRES_DB: "${DB_DATABASE}"
-      PGPASSWORD: "${PGPASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE:-homestead}"
+      POSTGRES_USER: "${DB_USERNAME:-homestead}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+      PGPASSWORD: "${DB_PASSWORD:-secret}"
     volumes:
      - pgsqldata:/var/lib/postgresql/data
      - ./docker/pgsql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -45,14 +45,14 @@ services:
     networks:
      - harbornet
   testing:
-    image: postgres:10
+    image: postgres:${DOCKER_POSTGRES_VERSION:-10}
     ports:
      - "${DOCKER_PGSQL_TEST_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: "${DB_USERNAME}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD}"
-      POSTGRES_DB: "${DB_DATABASE}"
-      PGPASSWORD: "${PGPASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE:-homestead}"
+      POSTGRES_USER: "${DB_USERNAME:-homestead}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+      PGPASSWORD: "${DB_PASSWORD:-secret}"
     volumes:
      - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data
      - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -60,9 +60,9 @@ services:
      - harbornet
   node:
     build:
-      context: ./docker/node
+      context: ./docker/node/${DOCKER_NODE_VERSION:-8}
       dockerfile: Dockerfile
-    image: brackets/node:8
+    image: brackets/node:${DOCKER_NODE_VERSION:-8}
     user: node
     volumes:
      - .:/var/www/html
