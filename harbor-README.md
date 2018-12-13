@@ -11,24 +11,13 @@ This harbor provides docker configuration for your project. It is based on vesse
 
 This script handles the current instance. To create new, install or update harbor, use harbor installer.
 
-## Let's init Laravel/Craftable ##
+## Let's init Laravel / Craftable ##
 
 If you have an existing Laravel/Craftable project and you have not initialize this project, run 
 
 `harbor init`
 
 which will setup some .env variables, install required packages and will run npm
-
-<!-- This will run:
-`cp .env.example .env`
-make some some changes to .env file (setting correct DB_HOST and use PostgreSQL over MySQL)
-`habror composer require predis/predis`
-`habror composer install`
-`harbor artisan key:generate`
-`harbor restart`
-`harbor artisan migrate`
-`harbor npm install`
-`harbor npm run dev`-->
 
 ## Starting a harbor (docker) ##
 
@@ -79,3 +68,7 @@ In this section you can find all commands supported by harbor:
 `harbor new laravel` will install laravel application to current folder. See harbor installer, it is the recommended way.
 
 `harbor new craftable` will install craftable application to current folder. See harbor installer, it is the recommended way.
+
+## SSH keys ##
+
+To use ssh keys in php container, copy your keys to ./docker/php/ssh. You have to restart container after adding keys.
