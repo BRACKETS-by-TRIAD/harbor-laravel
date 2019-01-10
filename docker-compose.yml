@@ -26,6 +26,7 @@ services:
      - ./docker/php/ssh:/root/.ssh
      - psyhistory:/root/.config
      - node_modules:/var/www/html/node_modules
+     - composer-cache:/root/.composer/cache
     networks:
      - harbornet
   pgsql:
@@ -89,3 +90,5 @@ volumes:
     driver: "local"
   vendor:
     driver: "local"
+  composer-cache:
+    external: true
