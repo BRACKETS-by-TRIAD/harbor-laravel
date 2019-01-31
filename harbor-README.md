@@ -11,9 +11,9 @@ This harbor provides docker configuration for your project. It is based on vesse
 
 This script handles the current instance. To create new, install or update harbor, use harbor installer.
 
-## Let's init Laravel / Craftable ##
+## Let's init laravel / craftable ##
 
-If you have an existing Laravel/Craftable project and you have not initialize this project, run 
+If you have an existing laravel / craftable project and you have not initialize this project, run 
 
 `harbor init`
 
@@ -25,11 +25,11 @@ To start the docker environment use:
 
 `harbor start`
 
-This will start all the docker containers and set up network and volumes correctly. So now we can play around with empty PostgreSQL or php. Now you can point your browser to the http://localhost and you should be able to see a default `/` route maped to public/index.php.
+This will start all the docker containers and set up network and volumes correctly. So now we can play around with empty PostgreSQL or php. Now you can point your browser to the http://localhost and you should be able to see a default `/` route mapped to public/index.php.
 
 ## Rebuild a harbor (docker) ##
 
-In case you change some env values for docker, or changes some Docker file or other configuration, you should run
+In case you change some env values for docker, or changes some docker file or other configuration, you should run
 
 `harbor rebuild`
 
@@ -71,4 +71,4 @@ In this section you can find all commands supported by harbor:
 
 ## SSH keys ##
 
-To use ssh keys in php container, copy your keys to ./docker/php/ssh. You have to restart container after adding keys.
+To use ssh keys in php container, copy your keys to ./docker/php/ssh. You have to restart container after adding keys. SSH keys may be required for some git repositories.
