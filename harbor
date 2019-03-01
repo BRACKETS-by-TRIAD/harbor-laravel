@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=1.0.1
+VERSION=1.0.2
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -348,7 +348,12 @@ if [[ $# -gt 0 ]]; then
             # cp .env.example .env if .env is missing
             if [[ ! -f .env ]] && [[ -f .env.example ]]; then
                 cp .env.example .env
-            fi
+
+
+            # setting harbor in .env and .env.example
+            echo "Setting harbor in .env and .env.example..."
+            setHarborInEnv .env.example
+            setHarborInEnv .env
 
             echo "Changing .env ..."
             # change values in .env file
