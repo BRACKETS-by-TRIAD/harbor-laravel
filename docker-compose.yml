@@ -83,7 +83,7 @@ volumes:
   pgsqldata:
     driver: "local"
   pgsqltestdata:
-      driver: "local"
+    driver: "local"
   redisdata:
     driver: "local"
   psyhistory:
