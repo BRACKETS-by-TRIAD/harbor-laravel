@@ -85,6 +85,21 @@ function testRunningContainers {
     fi
 }
 
+function getOverride {
+    # get requested branch
+    OVERRIDE=false
+    for i in "$@"
+    do
+        case ${i} in
+            -o|--override)
+                BRANCH=true
+                ;;
+            *)
+                ;;
+        esac
+    done
+}
+
 function modifyEnv {
     if [[ -f .env ]]; then
 
@@ -113,6 +128,7 @@ function modifyEnv {
 }
 
 function setHarborInEnv {
+    getOverride "$@"
 
     if [[ ! ".env" == "$1" ]] && [[ ! ".env.example" == "$1" ]]; then
         return
@@ -125,59 +141,64 @@ function setHarborInEnv {
 
     echo "Adding values to $1 ..."
     # add or modify values in .env/.env.example
-    if grep -Fxq "#docker-config" $1; then
+    if grep -Fq "#docker-config" $1; then
         echo "Docker config already in .env.example"
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "" >> $1
         echo -e "#docker-config" >> $1
     fi
 
-    if grep -Fxq "DOCKER_APP_PORT" $1; then
+    if grep -Fq "DOCKER_APP_PORT" $1; then
         ${SEDCMD} "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="${DOCKER_APP_PORT}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_APP_PORT="${DOCKER_APP_PORT}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_PGSQL_PORT" $1; then
+    if grep -Fq "DOCKER_PGSQL_PORT" $1; then
         ${SEDCMD} "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_PGSQL_TEST_PORT" $1; then
+    if grep -Fq "DOCKER_PGSQL_TEST_PORT" $1; then
         ${SEDCMD} "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_PGSQL_TEST_DIR" $1; then
+    if grep -Fq "DOCKER_PGSQL_TEST_DIR" $1; then
         ${SEDCMD} "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_PHP_VERSION" $1; then
+    if grep -Fq "DOCKER_PHP_VERSION" $1; then
         ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_POSTGRES_VERSION" $1; then
+    if grep -Fq "DOCKER_POSTGRES_VERSION" $1; then
         ${SEDCMD} "s/DOCKER_POSTGRES_VERSION=.*/DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_NODE_VERSION" $1; then
+    if grep -Fq "DOCKER_NODE_VERSION" $1; then
         ${SEDCMD} "s/DOCKER_NODE_VERSION=.*/DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"" >> $1
     fi
 
-    if grep -Fxq "DOCKER_PHP_XDEBUG" $1; then
+    if grep -Fq "DOCKER_PHP_XDEBUG" $1; then
         ${SEDCMD} "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"/" $1
-    else
+    elif [[ ${OVERRIDE} == true ]]; then
         echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> $1
+    fi
+
+    # removed bak file
+    if [[ -f "$1.bak" ]]; then
+        rm "$1.bak"
     fi
 }
 
@@ -353,7 +374,7 @@ if [[ $# -gt 0 ]]; then
             # setting harbor in .env and .env.example
             echo "Setting harbor in .env and .env.example..."
             setHarborInEnv .env.example
-            setHarborInEnv .env
+            setHarborInEnv .env -o
 
             echo "Changing .env ..."
             # change values in .env file
@@ -369,7 +390,7 @@ if [[ $# -gt 0 ]]; then
             source .env
 
             # art key:generate
-            if [[ -z "${APP_KEY}" ]]; then
+            if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
                 ${COMPOSE} run --rm php php artisan key:generate
                 # source actual env values
                 source .env
@@ -419,7 +440,7 @@ if [[ $# -gt 0 ]]; then
                     # setting harbor in .env and .env.example
                     echo "Setting harbor in .env and .env.example..."
                     setHarborInEnv .env.example
-                    setHarborInEnv .env
+                    setHarborInEnv .env -o
 
                     echo "Changing .env ..."
                     # change values in .env file
@@ -486,7 +507,7 @@ if [[ $# -gt 0 ]]; then
                     # setting harbor in .env and .env.example
                     echo "Setting harbor in .env and .env.example..."
                     setHarborInEnv .env.example
-                    setHarborInEnv .env
+                    setHarborInEnv .env -o
 
                     echo "Changing .env ..."
                     # change values in .env file
