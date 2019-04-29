@@ -85,21 +85,6 @@ function testRunningContainers {
     fi
 }
 
-function getOverride {
-    # get requested branch
-    OVERRIDE=false
-    for i in "$@"
-    do
-        case ${i} in
-            -o|--override)
-                BRANCH=true
-                ;;
-            *)
-                ;;
-        esac
-    done
-}
-
 function modifyEnv {
     if [[ -f .env ]]; then
 
@@ -128,8 +113,6 @@ function modifyEnv {
 }
 
 function setHarborInEnv {
-    getOverride "$@"
-
     if [[ ! ".env" == "$1" ]] && [[ ! ".env.example" == "$1" ]]; then
         return
     fi
@@ -142,57 +125,57 @@ function setHarborInEnv {
     echo "Adding values to $1 ..."
     # add or modify values in .env/.env.example
     if grep -Fq "#docker-config" $1; then
-        echo "Docker config already in .env.example"
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config block already in $1"
+    else
         echo -e "" >> $1
         echo -e "#docker-config" >> $1
     fi
 
     if grep -Fq "DOCKER_APP_PORT" $1; then
-        ${SEDCMD} "s/DOCKER_APP_PORT=.*/DOCKER_APP_PORT="${DOCKER_APP_PORT}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_APP_PORT already in $1"
+    else
         echo -e "DOCKER_APP_PORT="${DOCKER_APP_PORT}"" >> $1
     fi
 
     if grep -Fq "DOCKER_PGSQL_PORT" $1; then
-        ${SEDCMD} "s/DOCKER_PGSQL_PORT=.*/DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_PGSQL_PORT already in $1"
+    else
         echo -e "DOCKER_PGSQL_PORT="${DOCKER_PGSQL_PORT}"" >> $1
     fi
 
     if grep -Fq "DOCKER_PGSQL_TEST_PORT" $1; then
-        ${SEDCMD} "s/DOCKER_PGSQL_TEST_PORT=.*/DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_PGSQL_TEST_PORT already in $1"
+    else
         echo -e "DOCKER_PGSQL_TEST_PORT="${DOCKER_PGSQL_TEST_PORT}"" >> $1
     fi
 
     if grep -Fq "DOCKER_PGSQL_TEST_DIR" $1; then
-        ${SEDCMD} "s/DOCKER_PGSQL_TEST_DIR=.*/DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_PGSQL_TEST_DIR already in $1"
+    else
         echo -e "DOCKER_PGSQL_TEST_DIR="${DOCKER_PGSQL_TEST_DIR}"" >> $1
     fi
 
     if grep -Fq "DOCKER_PHP_VERSION" $1; then
-        ${SEDCMD} "s/DOCKER_PHP_VERSION=.*/DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_PHP_VERSION already in $1"
+    else
         echo -e "DOCKER_PHP_VERSION="${DOCKER_PHP_VERSION}"" >> $1
     fi
 
     if grep -Fq "DOCKER_POSTGRES_VERSION" $1; then
-        ${SEDCMD} "s/DOCKER_POSTGRES_VERSION=.*/DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_POSTGRES_VERSION already in $1"
+    else
         echo -e "DOCKER_POSTGRES_VERSION="${DOCKER_POSTGRES_VERSION}"" >> $1
     fi
 
     if grep -Fq "DOCKER_NODE_VERSION" $1; then
-        ${SEDCMD} "s/DOCKER_NODE_VERSION=.*/DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_NODE_VERSION already in $1"
+    else
         echo -e "DOCKER_NODE_VERSION="${DOCKER_NODE_VERSION}"" >> $1
     fi
 
     if grep -Fq "DOCKER_PHP_XDEBUG" $1; then
-        ${SEDCMD} "s/DOCKER_PHP_XDEBUG=.*/DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"/" $1
-    elif [[ ${OVERRIDE} == true ]]; then
+        echo "Docker config DOCKER_PHP_XDEBUG already in $1"
+    else
         echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> $1
     fi
 
@@ -374,20 +357,20 @@ if [[ $# -gt 0 ]]; then
             # setting harbor in .env and .env.example
             echo "Setting harbor in .env and .env.example..."
             setHarborInEnv .env.example
-            setHarborInEnv .env -o
+            setHarborInEnv .env
 
             echo "Changing .env ..."
             # change values in .env file
             modifyEnv
+
+            # source actual env values
+            source .env
 
             echo "Adding predis/predis ..."
             # composer require predis and install - in a composer container
             # TODO somehow get response if finished ok  - (exit \$?) not working
             ${COMPOSE} run --rm php composer require predis/predis
             ${COMPOSE} run --rm php composer install
-
-            # source actual env values
-            source .env
 
             # art key:generate
             if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
@@ -440,20 +423,20 @@ if [[ $# -gt 0 ]]; then
                     # setting harbor in .env and .env.example
                     echo "Setting harbor in .env and .env.example..."
                     setHarborInEnv .env.example
-                    setHarborInEnv .env -o
+                    setHarborInEnv .env
 
                     echo "Changing .env ..."
                     # change values in .env file
                     modifyEnv
+
+                    # source actual env values
+                    source .env
 
                     echo "Adding predis/predis ..."
                     # composer require predis and install - in a composer container
                     # TODO somehow get response if finished ok  - (exit \$?) not working
                     ${COMPOSE} run --rm php composer require predis/predis
                     ${COMPOSE} run --rm php composer install
-
-                    # source actual env values
-                    source .env
 
                     # art key:generate
                     if [[ -z "${APP_KEY}" ]]; then
@@ -507,20 +490,20 @@ if [[ $# -gt 0 ]]; then
                     # setting harbor in .env and .env.example
                     echo "Setting harbor in .env and .env.example..."
                     setHarborInEnv .env.example
-                    setHarborInEnv .env -o
+                    setHarborInEnv .env
 
                     echo "Changing .env ..."
                     # change values in .env file
                     modifyEnv
+
+                    # source actual env values
+                    source .env
 
                     echo "Adding predis/predis ..."
                     # composer require predis and install - in a composer container
                     # TODO somehow get response if finished ok  - (exit \$?) not working
                     ${COMPOSE} run --rm php composer require predis/predis
                     ${COMPOSE} run --rm php composer install
-
-                    # source actual env values
-                    source .env
 
                     echo "Restarting containers ..."
                     # restart docker containers
