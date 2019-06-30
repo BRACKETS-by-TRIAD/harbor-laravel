@@ -20,12 +20,15 @@ services:
       APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
       DOCKER_PHP_XDEBUG: "${DOCKER_PHP_XDEBUG:-off}"
+      HARBOR_USER_UID: "${HARBOR_USER_UID:-1000}"
     volumes:
      - .:/var/www/html:delegated
      - ./docker/php/ssh:/root/.ssh:delegated
-     - psyhistory:/root/.config
-     - node_modules:/var/www/html/node_modules
-     - composer-cache:/root/.composer/cache
+     - ./docker/php/ssh:/home/harbor/.ssh:delegated
+     - psyhistoryroot:/root/.config
+     - psyhistoryharbor:/home/harbor/.config
+     - nodemodules:/var/www/html/node_modules
+     - composercache:/home/harbor/.composer/cache
     networks:
      - harbornet
   pgsql:
@@ -53,8 +56,10 @@ services:
       POSTGRES_USER: "${DB_USERNAME:-homestead}"
       POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
       PGPASSWORD: "${DB_PASSWORD:-secret}"
+    user: postgres
     volumes:
-     - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data:delegated
+     - pgsqldatatest:/var/lib/postgresql/data:delegated
+#     - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data:delegated # uncomment to use dir as a filesystem
      - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
     networks:
      - harbornet
@@ -62,6 +67,9 @@ services:
     build:
       context: ./docker/node/${DOCKER_NODE_VERSION:-8}
       dockerfile: Dockerfile
+      args:
+        uid: "${HARBOR_USER_UID:-1000}"
+        gid: "${HARBOR_USER_GID:-1000}"
     image: brackets/node:${DOCKER_NODE_VERSION:-8}
     user: node
     volumes:
@@ -82,15 +90,17 @@ networks:
 volumes:
   pgsqldata:
     driver: "local"
-  pgsqltestdata:
+  pgsqldatatest:
     driver: "local"
   redisdata:
     driver: "local"
-  psyhistory:
+  psyhistoryroot:
     driver: "local"
-  node_modules:
+  psyhistoryharbor:
+    driver: "local"
+  nodemodules:
     driver: "local"
   vendor:
     driver: "local"
-  composer-cache:
+  composercache:
     external: true
