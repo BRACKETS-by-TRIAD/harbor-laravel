@@ -2,7 +2,7 @@
 
 # Run PHP-FPM as current user
 if [[ ! -z "$HARBOR_USER_UID" ]]; then
-    sed -i "s/user\ \=.*/user\ \= $HARBOR_USER_UID/g" /etc/php/7.3/fpm/pool.d/www.conf
+    sed -i "s/user\ \=.*/user\ \= $HARBOR_USER_UID/g" /etc/php/7.2/fpm/pool.d/www.conf
 
     # Set UID and GID of user "harbor"
     usermod -u ${HARBOR_USER_UID} harbor
