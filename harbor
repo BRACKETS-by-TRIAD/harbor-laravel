@@ -243,34 +243,32 @@ if [[ $# -gt 0 ]]; then
 
         # Rebuild the containers
         rebuild)
-            if [[ "$EXEC" == "yes" ]]; then
-                shift 1
-                REMOVE_IMAGES=""
-                REMOVE_VOLUMES=""
-                for i in "$@"
-                do
-                    case ${i} in
-                        -d|--database)
-                            DATABASE=true
-                            ;;
+            shift 1
+            REMOVE_IMAGES=""
+            REMOVE_VOLUMES=""
+            for i in "$@"
+            do
+                case ${i} in
+                    -d|--database)
+                        DATABASE=true
+                        ;;
 
-                        -i|--images)
-                            REMOVE_IMAGES="--rmi all"
-                            ;;
+                    -i|--images)
+                        REMOVE_IMAGES="--rmi all"
+                        ;;
 
-                        -v|--volumes)
-                            REMOVE_VOLUMES="-v"
-                            ;;
+                    -v|--volumes)
+                        REMOVE_VOLUMES="-v"
+                        ;;
 
-                        *)
-                            ;;
-                    esac
-                done
-                ./harbor start
-                ${COMPOSE} down ${REMOVE_VOLUMES} ${REMOVE_IMAGES}
-                if [[ "$DATABASE" == "true" ]]; then
-                    rm -rf ${DOCKER_PGSQL_TEST_DIR}/*
-                fi
+                    *)
+                        ;;
+                esac
+            done
+            ./harbor start
+            ${COMPOSE} down ${REMOVE_VOLUMES} ${REMOVE_IMAGES}
+            if [[ "$DATABASE" == "true" ]]; then
+                rm -rf ${DOCKER_PGSQL_TEST_DIR}/*
             fi
             ${COMPOSE} build
             ;;

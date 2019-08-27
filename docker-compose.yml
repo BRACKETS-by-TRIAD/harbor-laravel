@@ -13,9 +13,9 @@ services:
      - harbornet
   php:
     build:
-      context: ./docker/php/${DOCKER_PHP_VERSION:-7.2}
+      context: ./docker/php/${DOCKER_PHP_VERSION:-7.3}
       dockerfile: Dockerfile
-    image: brackets/php:${DOCKER_PHP_VERSION:-7.2}
+    image: brackets/php:${DOCKER_PHP_VERSION:-7.3}
     environment:
       APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
@@ -32,7 +32,7 @@ services:
     networks:
      - harbornet
   pgsql:
-    image: postgres:${DOCKER_POSTGRES_VERSION:-10}
+    image: postgres:${DOCKER_POSTGRES_VERSION:-11}
     ports:
      - "${DOCKER_PGSQL_PORT:-5432}:5432"
     environment:
@@ -48,7 +48,7 @@ services:
     networks:
      - harbornet
   testing:
-    image: postgres:${DOCKER_POSTGRES_VERSION:-10}
+    image: postgres:${DOCKER_POSTGRES_VERSION:-11}
     ports:
      - "${DOCKER_PGSQL_TEST_PORT:-5433}:5432"
     environment:
@@ -65,12 +65,12 @@ services:
      - harbornet
   node:
     build:
-      context: ./docker/node/${DOCKER_NODE_VERSION:-8}
+      context: ./docker/node/${DOCKER_NODE_VERSION:-12}
       dockerfile: Dockerfile
       args:
         uid: "${HARBOR_USER_UID:-1000}"
         gid: "${HARBOR_USER_GID:-1000}"
-    image: brackets/node:${DOCKER_NODE_VERSION:-8}
+    image: brackets/node:${DOCKER_NODE_VERSION:-12}
     user: node
     volumes:
      - .:/var/www/html:delegated
