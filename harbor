@@ -394,11 +394,13 @@ if [[ $# -gt 0 ]]; then
 
         # Sent exec command to docker-compose
         exec)
+            shift 1
             ${COMPOSE} exec "$@"
             ;;
 
         # Sent run command to docker-compose
         run)
+            shift 1
             ${COMPOSE} run "$@"
             ;;
 
