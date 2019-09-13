@@ -13,7 +13,7 @@ This script handles the current instance. To create new, install or update harbo
 
 ## Upgrade guide ##
 
-### From 1.0 to 1.1 ###
+### From 1.0 to 2.0 ###
 
 As the containers has been changed, you have to rebuild all the containers and create global volume.
 
