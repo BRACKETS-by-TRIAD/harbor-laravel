@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.0
+VERSION=2.0.1
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -63,6 +63,10 @@ export DB_USERNAME=${DB_USERNAME:-homestead}
 export DB_PASSWORD=${DB_PASSWORD:-secret}
 export HARBOR_USER_UID=${HARBOR_USER_UID:-$UID}
 export HARBOR_USER_GID=${HARBOR_USER_GID:-$GID}
+
+if [[ ${DB_PASSWORD} == "" ]]; then
+    export DB_PASSWORD="bestsecret"
+fi
 
 # is the environment running
 PSRESULT="$(docker-compose ps -q)"
