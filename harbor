@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.0
+VERSION=2.0.1
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -95,6 +95,10 @@ function modifyEnv {
 
         # source actual env values
         source .env
+
+        if [[ ${DB_PASSWORD} == "" ]]; then
+            export DB_PASSWORD="bestsecret"
+        fi
 
         # modify values
         ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:"${DOCKER_APP_PORT}"/" .env
