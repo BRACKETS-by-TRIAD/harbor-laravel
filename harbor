@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.2
+VERSION=2.0.3
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -203,8 +203,9 @@ if [[ $# -gt 0 ]]; then
         source .env
     fi
 
-    if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
-        docker volume create --driver local composer-cache
+    if [[ ! "$(docker volume ls -q | grep composercache)" ]]; then
+        echo "composercache volume does not exist, will be created now."
+        docker volume create --driver local composercache
     fi
 
     case "$1" in
