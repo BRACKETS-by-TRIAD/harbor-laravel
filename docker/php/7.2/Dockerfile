@@ -20,7 +20,7 @@ RUN apt-get update \
     && apt-get install -y php7.2-fpm php7.2-cli php7.2-gd \
        php7.2-pgsql php7.2-imap php-memcached php7.2-mbstring php7.2-xml php7.2-curl \
        php7.2-imagick php7.2-zip php7.2-bcmath php7.2-xdebug php7.2-soap php7.2-redis \
-       php7.1-bcmath \
+       php7.2-bcmath \
     && gosu nobody true \
     && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && mkdir /run/php \
