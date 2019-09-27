@@ -21,6 +21,7 @@ services:
       XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
       DOCKER_PHP_XDEBUG: "${DOCKER_PHP_XDEBUG:-off}"
       HARBOR_USER_UID: "${HARBOR_USER_UID:-1000}"
+      TERMINAL_EMULATOR: "${DOCKER_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
     volumes:
      - .:/var/www/html:delegated
      - ./docker/php/ssh:/root/.ssh:delegated
