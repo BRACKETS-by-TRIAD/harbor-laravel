@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.5
+VERSION=2.0.6
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -57,6 +57,7 @@ export DOCKER_PHP_VERSION=${DOCKER_PHP_VERSION:-7.3}
 export DOCKER_POSTGRES_VERSION=${DOCKER_POSTGRES_VERSION:-11}
 export DOCKER_NODE_VERSION=${DOCKER_NODE_VERSION:-12}
 export DOCKER_PHP_XDEBUG=${DOCKER_PHP_XDEBUG:-off}
+export DOCKER_SSH_PATH=${DOCKER_SSH_PATH:-./docker/php/ssh}
 export DOCKER_TERMINAL_EMULATOR=${DOCKER_TERMINAL_EMULATOR:-JetBrains-JediTerm}
 
 export DB_DATABASE=${DB_DATABASE:-homestead}
@@ -187,6 +188,12 @@ function setHarborInEnv {
         echo "Docker config DOCKER_PHP_XDEBUG already in $1"
     else
         echo -e "DOCKER_PHP_XDEBUG="${DOCKER_PHP_XDEBUG}"" >> $1
+    fi
+
+    if grep -Fq "DOCKER_SSH_PATH" $1; then
+        echo "Docker config DOCKER_SSH_PATH already in $1"
+    else
+        echo -e "DOCKER_SSH_PATH="${DOCKER_SSH_PATH}"" >> $1
     fi
 
     if grep -Fq "DOCKER_TERMINAL_EMULATOR" $1; then
