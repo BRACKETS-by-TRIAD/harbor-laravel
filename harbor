@@ -468,6 +468,9 @@ if [[ $# -gt 0 ]]; then
             # restart docker containers
             ./harbor restart
 
+            # need to sleep, because it takes time to setup pgsql
+            sleep 5
+
             echo "Migrating ..."
             # migrate and seed
             ./harbor art migrate --seed
@@ -537,6 +540,9 @@ if [[ $# -gt 0 ]]; then
                     # restart docker containers
                     ./harbor restart
 
+                    # need to sleep, because it takes time to setup pgsql
+                    sleep 5
+
                     echo "Migrating ..."
                     # migrate and seed
                     ./harbor art migrate --seed
@@ -599,6 +605,9 @@ if [[ $# -gt 0 ]]; then
                     echo "Restarting containers ..."
                     # restart docker containers
                     ./harbor restart
+
+                    # need to sleep, because it takes time to setup pgsql
+                    sleep 5
 
                     echo "Installing craftable ..."
                     # install craftable
