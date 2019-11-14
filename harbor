@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.5
+VERSION=2.0.6
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -448,6 +448,9 @@ if [[ $# -gt 0 ]]; then
             # source actual env values
             source .env
 
+            # make dir for node_modules, before docker-compose does
+            mkdir -p ./node_modules
+
             echo "Adding predis/predis ..."
             # composer require predis and install - in a composer container
             # TODO somehow get response if finished ok  - (exit \$?) not working
@@ -492,6 +495,9 @@ if [[ $# -gt 0 ]]; then
                     ${COMPOSE} down -v
 
                     testRunningContainers
+
+                    # make dir for node_modules, before docker-compose does
+                    mkdir -p ./node_modules
 
                     # laravel new
                     ${COMPOSE} run --rm php laravel new ./application
@@ -554,6 +560,9 @@ if [[ $# -gt 0 ]]; then
                     ${COMPOSE} down -v
 
                     testRunningContainers
+
+                    # make dir for node_modules, before docker-compose does
+                    mkdir -p ./node_modules
 
                     # craftable new
                     # use php container to create craftable new without install
