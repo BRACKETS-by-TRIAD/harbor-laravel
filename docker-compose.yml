@@ -24,8 +24,8 @@ services:
       TERMINAL_EMULATOR: "${DOCKER_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
     volumes:
      - .:/var/www/html:delegated
-     - ./docker/php/ssh:/root/.ssh:delegated
-     - ./docker/php/ssh:/home/harbor/.ssh:delegated
+     - ${DOCKER_SSH_PATH:-./docker/php/ssh}:/root/.ssh:delegated
+     - ${DOCKER_SSH_PATH:-./docker/php/ssh}:/home/harbor/.ssh:delegated
      - psyhistoryroot:/root/.config
      - psyhistoryharbor:/home/harbor/.config
      - nodemodules:/var/www/html/node_modules
