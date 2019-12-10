@@ -1,77 +1,65 @@
-version: '3'
+version: '3.7'
 services:
   nginx:
-    build:
-      context: ./docker/nginx
-      dockerfile: Dockerfile
-    image: brackets/nginx:latest
+    image: dejwcake/nginx:${HARBOR_NGINX_CONTAINER_VERSION:-1}
     ports:
-     - "${DOCKER_APP_PORT:-80}:80"
+     - "${HARBOR_WEB_PORT:-80}:80"
     volumes:
      - ./public/:/var/www/html/public:delegated
     networks:
      - harbornet
   php:
-    build:
-      context: ./docker/php/${DOCKER_PHP_VERSION:-7.3}
-      dockerfile: Dockerfile
-    image: brackets/php:${DOCKER_PHP_VERSION:-7.3}
+    image: dejwcake/php${HARBOR_PHP_VERSION:-7.4}:${HARBOR_PHP_CONTAINER_VERSION:-1}
     environment:
       APP_ENV: "${APP_ENV:-local}"
-      XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
-      DOCKER_PHP_XDEBUG: "${DOCKER_PHP_XDEBUG:-off}"
+      XDEBUG_HOST: "${HARBOR_XDEBUG_HOST:-host.docker.internal}"
+      HARBOR_XDEBUG: "${HARBOR_XDEBUG:-off}"
       HARBOR_USER_UID: "${HARBOR_USER_UID:-1000}"
-      TERMINAL_EMULATOR: "${DOCKER_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
+      TERMINAL_EMULATOR: "${HARBOR_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
     volumes:
      - .:/var/www/html:delegated
-     - ${DOCKER_SSH_PATH:-./docker/php/ssh}:/root/.ssh:delegated
-     - ${DOCKER_SSH_PATH:-./docker/php/ssh}:/home/harbor/.ssh:delegated
+     - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/root/.ssh:delegated
+     - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/home/harbor/.ssh:delegated
      - psyhistoryroot:/root/.config
      - psyhistoryharbor:/home/harbor/.config
      - nodemodules:/var/www/html/node_modules
      - composercache:/home/harbor/.composer/cache
     networks:
      - harbornet
-  pgsql:
-    image: postgres:${DOCKER_POSTGRES_VERSION:-11}
+  postgres:
+    image: dejwcake/postgres{HARBOR_POSTGRES_VERSION:-12}:${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
     ports:
-     - "${DOCKER_PGSQL_PORT:-5432}:5432"
+     - "${HARBOR_POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: "${DB_DATABASE:-homestead}"
-      POSTGRES_USER: "${DB_USERNAME:-homestead}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
-      PGPASSWORD: "${DB_PASSWORD:-secret}"
+      POSTGRES_DB: "${DB_DATABASE:-laravel}"
+      POSTGRES_USER: "${DB_USERNAME:-root}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-bestsecret}"
+      PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
     volumes:
-     - pgsqldata:/var/lib/postgresql/data
-     - ./docker/pgsql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
-     - ./docker/pgsql/export:/export:delegated
-     - ./docker/pgsql/import:/import:cached
+     - postgresdata:/var/lib/postgresql/data
+     - ./.harbor/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
+     - ./.harbor/postgres/export:/export:delegated
+     - ./.harbor/postgres/import:/import:cached
     networks:
      - harbornet
-  testing:
-    image: postgres:${DOCKER_POSTGRES_VERSION:-11}
+  postgrestesting:
+    image: dejwcake/postgres{HARBOR_POSTGRES_VERSION:-12}:${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
     ports:
-     - "${DOCKER_PGSQL_TEST_PORT:-5433}:5432"
+      - "${HARBOR_POSTGRES_TESTING_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: "${DB_DATABASE:-homestead}"
-      POSTGRES_USER: "${DB_USERNAME:-homestead}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
-      PGPASSWORD: "${DB_PASSWORD:-secret}"
+      POSTGRES_DB: "${DB_DATABASE:-laravel}"
+      POSTGRES_USER: "${DB_USERNAME:-root}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-bestsecret}"
+      PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
     user: postgres
     volumes:
-     - pgsqldatatest:/var/lib/postgresql/data:delegated
-#     - ${DOCKER_PGSQL_TEST_DIR}:/var/lib/postgresql/data:delegated # uncomment to use dir as a filesystem
-     - ./docker/testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
+     - postgrestestingdata:/var/lib/postgresql/data:delegated
+#     - ${HARBOR_POSTGRES_TESTING_DIR}:/var/lib/postgresql/data:delegated # uncomment to use dir as a filesystem
+     - ./.harbor/postgrestesting/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
     networks:
      - harbornet
   node:
-    build:
-      context: ./docker/node/${DOCKER_NODE_VERSION:-12}
-      dockerfile: Dockerfile
-      args:
-        uid: "${HARBOR_USER_UID:-1000}"
-        gid: "${HARBOR_USER_GID:-1000}"
-    image: brackets/node:${DOCKER_NODE_VERSION:-12}
+    image: dejwcake/node{HARBOR_NODE_VERSION:-12}:${HARBOR_NODE_CONTAINER_VERSION:-1}
     user: node
     volumes:
      - .:/var/www/html:delegated
@@ -89,9 +77,9 @@ networks:
   harbornet:
     driver: "bridge"
 volumes:
-  pgsqldata:
+  postgresdata:
     driver: "local"
-  pgsqldatatest:
+  postgrestestingdata:
     driver: "local"
   redisdata:
     driver: "local"
