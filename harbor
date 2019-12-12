@@ -14,7 +14,7 @@ esac
 
 if [[ "$MACHINE" == "UNKNOWN" ]]; then
     echo "Unsupported system type"
-    echo "System must be a Macintosh or Linux or Windows"
+    echo "System must be a Macintosh/Linux/Windows"
     echo ""
     echo "System detection determined via uname command"
     echo "If the following is empty, could not find uname command: $(which uname)"
@@ -23,20 +23,19 @@ fi
 
 # set xdebug host for developing
 if [[ $(docker version --format '{{.Server.Version}}') > 18.03.0 ]]; then
-    export XDEBUG_HOST=host.docker.internal
-else
-    if [[ "$MACHINE" == "linux" ]]; then
-        export XDEBUG_HOST=$(/sbin/ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
-    elif [[ "$MACHINE" == "mac" ]]; then
-        export XDEBUG_HOST=$(ipconfig getifaddr en0) # Ethernet
+    HARBOR_XDEBUG_HOST=host.docker.internal
+elif [[ "$MACHINE" == "linux" ]]; then
+    HARBOR_XDEBUG_HOST=$(/sbin/ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
+elif [[ "$MACHINE" == "mac" ]]; then
+    HARBOR_XDEBUG_HOST=$(ipconfig getifaddr en0) # Ethernet
 
-        if [[ -z "$XDEBUG_HOST" ]]; then
-            export XDEBUG_HOST=$(ipconfig getifaddr en1) # Wifi
-        fi
-    elif [[ "$MACHINE" == "mingw64" ]]; then # Git Bash
-        export XDEBUG_HOST=10.0.75.1
+    if [[ -z "$HARBOR_XDEBUG_HOST" ]]; then
+        HARBOR_XDEBUG_HOST=$(ipconfig getifaddr en1) # Wifi
     fi
+elif [[ "$MACHINE" == "mingw64" ]]; then # Git Bash
+    HARBOR_XDEBUG_HOST=10.0.75.1
 fi
+export HARBOR_XDEBUG_HOST
 
 # set sed command
 if [[ "$MACHINE" == "linux" ]] || [[ "$MACHINE" == "mingw64" ]]; then
