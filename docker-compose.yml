@@ -38,7 +38,7 @@ services:
   db:
     image: dejwcake/postgres{HARBOR_POSTGRES_VERSION:-12}:${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
     ports:
-     - "${HARBOR_POSTGRES_PORT:-5432}:5432"
+     - "${HARBOR_DB_PORT:-5432}:${HARBOR_DB_PORT:-5432}"
     environment:
       POSTGRES_DB: "${DB_DATABASE:-laravel}"
       POSTGRES_USER: "${DB_USERNAME:-root}"
@@ -56,7 +56,7 @@ services:
   db-testing:
     image: dejwcake/postgres{HARBOR_POSTGRES_VERSION:-12}:${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
     ports:
-      - "${HARBOR_POSTGRES_TESTING_PORT:-5432}:5432"
+      - "${HARBOR_DB_TESTING_PORT:-5433}:${HARBOR_DB_PORT:-5432}"
     environment:
       POSTGRES_DB: "${DB_DATABASE:-laravel}"
       POSTGRES_USER: "${DB_USERNAME:-root}"

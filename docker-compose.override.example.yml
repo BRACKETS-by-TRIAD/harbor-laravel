@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+# Add your own services configuration here
+
+  nginx:
+#   Add your own nginx configuration here
+
+  php:
+#   Add your own php configuration here
+
+  db:
+#   Add your own db configuration here
+
+  db-testing:
+#   Add your own db-testing configuration here
+
+  redis:
+#   Add your own redis configuration here
+
+  node:
+#   Add your own node configuration here
+
+networks:
+# Add your own network configuration here
+
+volumes:
+# Add your own volume configuration here
