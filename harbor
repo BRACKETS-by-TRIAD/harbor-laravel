@@ -100,7 +100,7 @@ setupEnvVariables() {
   fi
 
   # create base docker-compose command to run
-  COMPOSE="docker-compose -f docker-compose.yml"
+  COMPOSE="docker-compose -f docker-compose.yml -f docker-compose.override.yml"
 }
 
 testRunningContainers() {
@@ -280,6 +280,217 @@ composer() {
   fi
 }
 
+db() {
+  if [[ ${HARBOR_DB_CONNECTION} == "pgsql" ]]; then
+    DB_COMMAND="psql -U ${DB_USERNAME} -h localhost ${DB_DATABASE}"
+  elif [[ ${HARBOR_DB_CONNECTION} == "mysql" ]]; then
+    DB_COMMAND="mysql -u ${DB_USERNAME} -h localhost ${DB_DATABASE}"
+  else
+    echo "Database ${HARBOR_DB_CONNECTION} not supported in this command."
+  fi
+  if [[ "$EXEC" == "yes" ]]; then
+    ${COMPOSE} exec \
+      -u harbor \
+      db \
+      ${DB_COMMAND} "$@"
+  else
+    ${COMPOSE} run --rm \
+      db \
+      ${DB_COMMAND} "$@"
+  fi
+}
+
+dump() {
+  if [[ ${HARBOR_DB_CONNECTION} == "pgsql" ]]; then
+    DB_COMMAND="pg_dump -U ${DB_USERNAME} -h localhost ${DB_DATABASE}"
+  elif [[ ${HARBOR_DB_CONNECTION} == "mysql" ]]; then
+    DB_COMMAND="mysqldump -u ${DB_USERNAME} -h localhost ${DB_DATABASE}"
+  else
+    echo "Database ${HARBOR_DB_CONNECTION} not supported in this command."
+  fi
+  if [[ "$EXEC" == "yes" ]]; then
+    ${COMPOSE} exec \
+      -u harbor \
+      db \
+      ${DB_COMMAND} "$@"
+  else
+    ${COMPOSE} run --rm \
+      db \
+      ${DB_COMMAND} "$@"
+  fi
+}
+
+ssh() {
+  if [[ "$EXEC" == "yes" ]] && [[ "$1" != "node" ]]; then
+    if [[ "$1" == "php" ]] && [[ "$2" != "root" ]]; then
+      USER_ARGUMENT="-u harbor"
+    else
+      USER_ARGUMENT=""
+    fi
+    ${COMPOSE} exec \
+      ${USER_ARGUMENT} \
+      $1 \
+      bash
+  else
+    ${COMPOSE} run --rm \
+      $1 \
+      bash
+  fi
+}
+
+initCheckAndPrepareEnv() {
+  echo "Checking .env and folders ..."
+
+  testRunningContainers
+
+  if [[ ! -f .env.example ]]; then
+    echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
+    exit 0
+  fi
+
+  # cp .env.example .env if .env is missing
+  if [[ ! -f .env ]] && [[ -f .env.example ]]; then
+    cp .env.example .env
+  fi
+
+  # make dir for node_modules, before docker-compose does
+  mkdir -p ./node_modules
+}
+
+initNpm() {
+  echo "Npm ..."
+  # npm install
+  ./harbor npm install
+
+  # npm run dev
+  ./harbor npm run dev
+}
+
+initPrepareEnv() {
+  # setting harbor in .env and .env.example
+  echo "Setting harbor in .env and .env.example..."
+  setHarborInEnv .env.example
+  setHarborInEnv .env
+
+  echo "Changing .env ..."
+  # change values in .env file
+  modifyEnv
+
+  # source actual env values
+  source .env
+}
+
+initPrepareRedis() {
+  echo "Adding predis/predis ..."
+  # composer require predis and install - in a composer container
+  # TODO somehow get response if finished ok  - (exit \$?) not working
+  ${COMPOSE} run --rm php bash -c "composer require predis/predis && composer install"
+}
+
+initPrepareContainers() {
+  # need to start first, because it takes time to setup database
+  echo "Starting db ..."
+  ${COMPOSE} run --rm db wait-for-active-database.sh
+
+  echo "Restarting containers ..."
+  # restart docker containers
+  ./harbor restart
+}
+
+init() {
+  echo "Setting up your docker environment for this laravel based project."
+
+  initPrepareEnv
+
+  initPrepareRedis
+
+  # art key:generate
+  if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
+    ${COMPOSE} run --rm php php artisan key:generate
+    # source actual env values
+    source .env
+  fi
+
+  initPrepareContainers
+
+  echo "Migrating ..."
+  # migrate and seed
+  ./harbor art migrate --seed
+
+  initNpm
+
+  # stop docker containers
+  ./harbor stop
+
+  echo "All set."
+}
+
+laravel() {
+  echo "Installing new laravel application to current folder."
+
+  # remove all containers and volumes
+  ${COMPOSE} down -v
+
+  testRunningContainers
+
+  # make dir for node_modules, before docker-compose does
+  mkdir -p ./node_modules
+
+  # laravel new
+  ${COMPOSE} run --rm php laravel new ./application
+
+  # move application content to this folder
+  mv application/* application/.[!.]* .
+  rm -rf ./application
+
+  echo "Laravel installed, initializing ..."
+
+  init
+}
+
+craftable() {
+  echo "Installing new craftable application to current folder."
+
+  # remove all containers and volumes
+  ${COMPOSE} down -v
+
+  testRunningContainers
+
+  # make dir for node_modules, before docker-compose does
+  mkdir -p ./node_modules
+
+  # craftable new
+  # use php container to create craftable new without install
+  if [[ "$3" == "--dev" ]]; then
+    ${COMPOSE} run --rm php craftable new --dev --no-install ./application
+  else
+    ${COMPOSE} run --rm php craftable new --no-install ./application
+  fi
+
+  # move application content to this folder
+  mv application/* application/.[!.]* .
+  rm -rf ./application
+
+  echo "Craftable installed, initializing ..."
+
+  initPrepareEnv
+
+  initPrepareRedis
+
+  initPrepareContainers
+
+  echo "Installing craftable ..."
+  # install craftable
+  ./harbor art craftable:install
+
+  initNpm
+
+  # stop docker containers
+  ./harbor stop
+
+  echo "All set."
+}
+
 main() {
   checkSystemSupport "$@"
   setupEnvVariables "$@"
@@ -372,44 +583,20 @@ main() {
         npm "$@"
       ;;
 
-    # If "yarn" is used, run yarn from our node container
-    yarn)
-      shift 1
-      ${COMPOSE} run --rm \
-        node \
-        yarn "$@"
-      ;;
-
-    # If "gulp" is used, run gulp from our node container
-    gulp)
-      shift 1
-      ${COMPOSE} run --rm \
-        node \
-        ./node_modules/.bin/gulp "$@"
-      ;;
-
     #
-    # PGSQL container commands
+    # DB container commands
     #
 
-    # If "psql" is used, run psql from our existing pgsql container
-    psql)
+    # If "db" is used, run psql/mysql from our existing db container
+    db)
       shift 1
-      if [[ "$EXEC" == "yes" ]]; then
-        ${COMPOSE} exec \
-          pgsql \
-          psql -U ${DB_USERNAME} -h localhost ${DB_DATABASE} "$@"
-      fi
+      db "$@"
       ;;
 
     # If "pg_dump" is used, run pg_dump from our existing pgsql container
-    pg_dump)
+    dump)
       shift 1
-      if [[ "$EXEC" == "yes" ]]; then
-        ${COMPOSE} exec \
-          pgsql \
-          pg_dump -U ${DB_USERNAME} -h localhost ${DB_DATABASE} "$@"
-      fi
+      dump "$@"
       ;;
 
     #
@@ -419,21 +606,7 @@ main() {
     # If "ssh" is used, connect to given container with bash
     ssh)
       shift 1
-      if [[ "$EXEC" == "yes" ]] && [[ "$1" != "node" ]]; then
-        if [[ "$1" == "php" ]] && [[ "$2" != "root" ]]; then
-          USER_ARGUMENT="-u harbor"
-        else
-          USER_ARGUMENT=
-        fi
-        ${COMPOSE} exec \
-          ${USER_ARGUMENT} \
-          $1 \
-          bash
-      else
-        ${COMPOSE} run --rm \
-          $1 \
-          bash
-      fi
+      ssh "$@"
       ;;
 
     # Sent exec command to docker-compose
@@ -454,208 +627,22 @@ main() {
 
     # Initialize harbor for existing project
     init)
-      echo "Setting up your docker environment for this laravel based project."
-
-      testRunningContainers
-
-      if [[ ! -f .env.example ]]; then
-        echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
-        exit 0
-      fi
-
-      # cp .env.example .env if .env is missing
-      if [[ ! -f .env ]] && [[ -f .env.example ]]; then
-        cp .env.example .env
-      fi
-
-      # setting harbor in .env and .env.example
-      echo "Setting harbor in .env and .env.example..."
-      setHarborInEnv .env.example
-      setHarborInEnv .env
-
-      echo "Changing .env ..."
-      # change values in .env file
-      modifyEnv
-
-      # source actual env values
-      source .env
-
-      # make dir for node_modules, before docker-compose does
-      mkdir -p ./node_modules
-
-      echo "Adding predis/predis ..."
-      # composer require predis and install - in a composer container
-      # TODO somehow get response if finished ok  - (exit \$?) not working
-      ${COMPOSE} run --rm php composer require predis/predis
-      ${COMPOSE} run --rm php composer install
-
-      # art key:generate
-      if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
-        ${COMPOSE} run --rm php php artisan key:generate
-        # source actual env values
-        source .env
-      fi
-
-      echo "Restarting containers ..."
-      # restart docker containers
-      ./harbor restart
-
-      # need to sleep, because it takes time to setup pgsql
-      sleep 5
-
-      echo "Migrating ..."
-      # migrate and seed
-      ./harbor art migrate --seed
-
-      echo "Npm ..."
-      # npm install
-      ./harbor npm install
-
-      # npm run dev
-      ./harbor npm run dev
-
-      # stop docker containers
-      ./harbor stop
+      initCheckAndPrepareEnv
+      init
       ;;
 
     # Installing new laravel or craftable project
-    new)
+    create-project|new)
       case "$2" in
 
       # Installing new laravel project
       laravel)
-        echo "Installing new laravel application to current folder."
-
-        # remove all containers and volumes
-        ${COMPOSE} down -v
-
-        testRunningContainers
-
-        # make dir for node_modules, before docker-compose does
-        mkdir -p ./node_modules
-
-        # laravel new
-        ${COMPOSE} run --rm php laravel new ./application
-
-        # move application content to this folder
-        mv application/* application/.[!.]* .
-        rm -rf ./application
-
-        echo "Laravel installed, initializing ..."
-
-        # setting harbor in .env and .env.example
-        echo "Setting harbor in .env and .env.example..."
-        setHarborInEnv .env.example
-        setHarborInEnv .env
-
-        echo "Changing .env ..."
-        # change values in .env file
-        modifyEnv
-
-        # source actual env values
-        source .env
-
-        echo "Adding predis/predis ..."
-        # composer require predis and install - in a composer container
-        # TODO somehow get response if finished ok  - (exit \$?) not working
-        ${COMPOSE} run --rm php composer require predis/predis
-        ${COMPOSE} run --rm php composer install
-
-        # art key:generate
-        if [[ -z "${APP_KEY}" ]]; then
-          ${COMPOSE} run --rm php php artisan key:generate
-          # source actual env values
-          source .env
-        fi
-
-        echo "Restarting containers ..."
-        # restart docker containers
-        ./harbor restart
-
-        # need to sleep, because it takes time to setup pgsql
-        sleep 5
-
-        echo "Migrating ..."
-        # migrate and seed
-        ./harbor art migrate --seed
-
-        echo "Npm ..."
-        # npm install
-        ./harbor npm install
-
-        # npm run dev
-        ./harbor npm run dev
-
-        # stop docker containers
-        ./harbor stop
+        laravel
         ;;
 
       # Installing new craftable project
       craftable)
-        echo "Installing new craftable application to current folder."
-
-        # remove all containers and volumes
-        ${COMPOSE} down -v
-
-        testRunningContainers
-
-        # make dir for node_modules, before docker-compose does
-        mkdir -p ./node_modules
-
-        # craftable new
-        # use php container to create craftable new without install
-        if [[ "$3" == "--dev" ]]; then
-          ${COMPOSE} run --rm php craftable new --dev --no-install ./application
-        else
-          ${COMPOSE} run --rm php craftable new --no-install ./application
-        fi
-
-        # move application content to this folder
-        mv application/* application/.[!.]* .
-        rm -rf ./application
-
-        echo "Craftable installed, initializing ..."
-
-        # setting harbor in .env and .env.example
-        echo "Setting harbor in .env and .env.example..."
-        setHarborInEnv .env.example
-        setHarborInEnv .env
-
-        echo "Changing .env ..."
-        # change values in .env file
-        modifyEnv
-
-        # source actual env values
-        source .env
-
-        echo "Adding predis/predis ..."
-        # composer require predis and install - in a composer container
-        # TODO somehow get response if finished ok  - (exit \$?) not working
-        ${COMPOSE} run --rm php composer require predis/predis
-        ${COMPOSE} run --rm php composer install
-
-        echo "Restarting containers ..."
-        # restart docker containers
-        ./harbor restart
-
-        # need to sleep, because it takes time to setup pgsql
-        sleep 5
-
-        echo "Installing craftable ..."
-        # install craftable
-        ./harbor art craftable:install
-
-        echo "Npm ..."
-        # npm install
-        ./harbor npm install
-
-        # npm run dev
-        ./harbor npm run dev
-
-        # stop docker containers
-        ./harbor stop
-
-        echo "All set."
+        craftable "$@"
         ;;
 
       # If not provided, show what to use
@@ -665,6 +652,10 @@ main() {
         ;;
       esac
       ;;
+
+    #
+    # Type and version
+    #
 
     # Get version
     -v | --version)
