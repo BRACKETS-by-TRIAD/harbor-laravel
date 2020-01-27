@@ -20,7 +20,7 @@ services:
   node:
 #   Add your own node configuration here
 
-networks:
+#networks:
 # Add your own network configuration here
 
 #volumes:
