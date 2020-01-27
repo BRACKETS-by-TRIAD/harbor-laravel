@@ -21,7 +21,7 @@ services:
 #   Add your own node configuration here
 
 #networks:
-# Add your own network configuration here
+# Uncomment and add your own network configuration here
 
 #volumes:
-# Add your own volume configuration here
+# Uncomment and add your own volume configuration here
