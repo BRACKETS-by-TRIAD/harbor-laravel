@@ -23,5 +23,5 @@ services:
 networks:
 # Add your own network configuration here
 
-volumes:
+#volumes:
 # Add your own volume configuration here
