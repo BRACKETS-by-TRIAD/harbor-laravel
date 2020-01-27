@@ -495,21 +495,20 @@ main() {
   checkSystemSupport "$@"
   setupEnvVariables "$@"
 
+  # Source .env, which can over-ride env vars
+  if [[ -f .env ]]; then
+    source .env
+  fi
+
+  if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
+    echo "composer-cache volume does not exist, will be created now."
+    docker volume create --driver local composer-cache
+  fi
+
   # If we pass any arguments...
   if [[ $# -gt 0 ]]; then
 
-    # Source .env, which can over-ride env vars
-    if [[ -f .env ]]; then
-      source .env
-    fi
-
-    if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
-      echo "composer-cache volume does not exist, will be created now."
-      docker volume create --driver local composer-cache
-    fi
-
     case "$1" in
-
     #
     # Docker commands
     #
@@ -632,7 +631,7 @@ main() {
       ;;
 
     # Installing new laravel or craftable project
-    create-project|new)
+    create-project | new)
       case "$2" in
 
       # Installing new laravel project
