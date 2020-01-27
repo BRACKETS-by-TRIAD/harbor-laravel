@@ -34,7 +34,7 @@ checkSystemSupport() {
   fi
 }
 
-prepareVolumes() {
+prepareExternalVolumes() {
   if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
     echo "empty-node-modules volume does not exist, will be created now."
     docker volume create --driver local empty-node-modules
@@ -515,7 +515,7 @@ main() {
     source .env
   fi
 
-  prepareVolumes
+  prepareExternalVolumes
 
   # If we pass any arguments...
   if [[ $# -gt 0 ]]; then
