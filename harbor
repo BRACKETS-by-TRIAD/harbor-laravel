@@ -34,6 +34,21 @@ checkSystemSupport() {
   fi
 }
 
+prepareVolumes() {
+  if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
+    echo "empty-node-modules volume does not exist, will be created now."
+    docker volume create --driver local empty-node-modules
+  fi
+    if [[ ! "$(docker volume ls -q | grep empty-vendor)" ]]; then
+    echo "empty-vendor volume does not exist, will be created now."
+    docker volume create --driver local empty-vendor
+  fi
+    if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
+    echo "composer-cache volume does not exist, will be created now."
+    docker volume create --driver local composer-cache
+  fi
+}
+
 setupEnvVariables() {
   # set xdebug host for developing
   if [[ $(docker version --format '{{.Server.Version}}') > 18.03.0 ]]; then
@@ -500,10 +515,7 @@ main() {
     source .env
   fi
 
-  if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
-    echo "composer-cache volume does not exist, will be created now."
-    docker volume create --driver local composer-cache
-  fi
+  prepareVolumes
 
   # If we pass any arguments...
   if [[ $# -gt 0 ]]; then
