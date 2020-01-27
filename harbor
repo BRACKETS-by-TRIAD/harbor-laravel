@@ -36,15 +36,15 @@ checkSystemSupport() {
 
 prepareExternalVolumes() {
   if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
-    echo "empty-node-modules volume does not exist, will be created now."
+#    echo "empty-node-modules volume does not exist, will be created now."
     docker volume create --driver local empty-node-modules
   fi
     if [[ ! "$(docker volume ls -q | grep empty-vendor)" ]]; then
-    echo "empty-vendor volume does not exist, will be created now."
+#    echo "empty-vendor volume does not exist, will be created now."
     docker volume create --driver local empty-vendor
   fi
     if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
-    echo "composer-cache volume does not exist, will be created now."
+#    echo "composer-cache volume does not exist, will be created now."
     docker volume create --driver local composer-cache
   fi
 }
