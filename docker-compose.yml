@@ -13,9 +13,9 @@ services:
      - harbornet
   php:
     build:
-      context: ./docker/php/${DOCKER_PHP_VERSION:-7.3}
+      context: ./docker/php/${DOCKER_PHP_VERSION:-7.4}
       dockerfile: Dockerfile
-    image: brackets/php:${DOCKER_PHP_VERSION:-7.3}
+    image: brackets/php:${DOCKER_PHP_VERSION:-7.4}
     environment:
       APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${XDEBUG_HOST:-host.docker.internal}"
