@@ -85,6 +85,13 @@ services:
      - redisdata:/data
     networks:
      - harbornet
+# Uncomment selenium section if you want to use selenium (for example for Laravel Dusk ) for your project
+#  selenium:
+#    image: selenium/standalone-chrome:3.11.0-antimony
+#    volumes:
+#      - /dev/shm:/dev/shm
+#    networks:
+#      - harbornet
 networks:
   harbornet:
     driver: "bridge"

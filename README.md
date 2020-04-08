@@ -102,3 +102,84 @@ In this section you can find all commands supported by harbor:
 ## SSH keys ##
 
 To use ssh keys in php container, copy your keys to ./docker/php/ssh. You have to restart container after adding keys. SSH keys may be required for some git repositories.
+
+## Laravel Dusk implementation (via selenium container) ##
+
+Read more about Laravel Dusk here: https://laravel.com/docs/7.x/dusk
+
+**1. uncomment following section of code in your docker-compose.yml:**
+
+```
+#  selenium:
+#    image: selenium/standalone-chrome:3.11.0-antimony
+#    volumes:
+#      - /dev/shm:/dev/shm
+#    networks:
+#      - harbornet
+```
+
+**2. `harbor rebuild` - will rebuild containers. Make sure selenium/standalone-chrome is running with command `docker ps`**
+
+**3. create copy of yours .env to .env.dusk.local and modify .env.dusk.local with these modifications:**
+
+```
+APP_DEBUG=false
+APP_URL=http://nginx:80
+DB_CONNECTION=pgsql
+DB_HOST=testing
+```
+
+**4. install Laravel Dusk**
+
+We are using selenium as driver for Dusk, so therefore our implementation is combination of these instructions:
+https://laravel.com/docs/7.x/dusk#installation and https://laravel.com/docs/7.x/dusk#using-other-browsers
+
+`harbor composer require --dev laravel/dusk` - first install Laravel Dusk package into your project via composer
+
+`harbor artisan dusk:install` - will prepare some directories, files and some basic test in your Laravel project
+
+**5. alter prepare() and driver() method in tests/DuskTestCase.php to utilize selenium container**
+
+```
+
+/**
+ * Prepare for Dusk test execution.
+ *
+ * @beforeClass
+ * @return void
+ */
+public static function prepare()
+{
+    // static::startChromeDriver();
+}
+
+/**
+ * Create the RemoteWebDriver instance.
+ *
+ * @return \Facebook\WebDriver\Remote\RemoteWebDriver
+ */
+protected function driver()
+{
+    $options = (new ChromeOptions)->addArguments([
+        '--window-size=1366,768',
+        '--disable-gpu',
+        '--headless',
+        '--no-sandbox',
+        '--ignore-ssl-errors',
+    ]);
+
+    return RemoteWebDriver::create(
+        'http://selenium:4444/wd/hub',
+        DesiredCapabilities::chrome()->setCapability(
+            ChromeOptions::CAPABILITY,
+            $options
+        )
+    );
+}  
+```
+
+**6. test Laravel Dusk implementation**
+
+`harbor artisan dusk` - will run Dusk test 
+
+In the case test failed - you can look in tests/Browser/screenshots for failure screenshots.
