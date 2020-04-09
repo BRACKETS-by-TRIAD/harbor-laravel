@@ -127,7 +127,6 @@ Read more about Laravel Dusk here: https://laravel.com/docs/7.x/dusk
 ```
 APP_DEBUG=false
 APP_URL=http://nginx:80
-DB_CONNECTION=pgsql
 DB_HOST=testing
 ```
 
