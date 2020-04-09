@@ -107,7 +107,9 @@ To use ssh keys in php container, copy your keys to ./docker/php/ssh. You have t
 
 Read more about Laravel Dusk here: https://laravel.com/docs/7.x/dusk
 
-**1. uncomment following section of code in your docker-compose.yml:**
+**1. `harbor stop` - stop all containers**
+
+**2. uncomment following section of code in your docker-compose.yml:**
 
 ```
 #  selenium:
@@ -118,9 +120,9 @@ Read more about Laravel Dusk here: https://laravel.com/docs/7.x/dusk
 #      - harbornet
 ```
 
-**2. `harbor rebuild` - will rebuild containers. Make sure selenium/standalone-chrome is running with command `docker ps`**
+**3. `harbor start` - start containers. Make sure selenium/standalone-chrome is running with command `docker ps`**
 
-**3. create copy of yours .env to .env.dusk.local and modify .env.dusk.local with these modifications:**
+**4. create copy of yours .env to .env.dusk.local and modify .env.dusk.local with these modifications:**
 
 ```
 APP_DEBUG=false
@@ -129,7 +131,7 @@ DB_CONNECTION=pgsql
 DB_HOST=testing
 ```
 
-**4. install Laravel Dusk**
+**5. install Laravel Dusk**
 
 We are using selenium as driver for Dusk, so therefore our implementation is combination of these instructions:
 https://laravel.com/docs/7.x/dusk#installation and https://laravel.com/docs/7.x/dusk#using-other-browsers
@@ -138,7 +140,7 @@ https://laravel.com/docs/7.x/dusk#installation and https://laravel.com/docs/7.x/
 
 `harbor artisan dusk:install` - will prepare some directories, files and some basic test in your Laravel project
 
-**5. alter prepare() and driver() method in tests/DuskTestCase.php to utilize selenium container**
+**6. alter prepare() and driver() method in tests/DuskTestCase.php to utilize selenium container**
 
 ```
 
@@ -178,7 +180,7 @@ protected function driver()
 }  
 ```
 
-**6. test Laravel Dusk implementation**
+**7. test Laravel Dusk implementation**
 
 `harbor artisan dusk` - will run Dusk test 
 
