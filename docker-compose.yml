@@ -62,12 +62,12 @@ services:
       POSTGRES_USER: "${DB_USERNAME:-root}"
       POSTGRES_PASSWORD: "${DB_PASSWORD:-bestsecret}"
       PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
-    user: postgres
     volumes:
       - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/postgresql/data}:delegated
       - ./.harbor/db-testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
     networks:
       - harbornet
+    restart: on-failure
 
   redis:
     image: redis:alpine

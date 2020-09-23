@@ -35,27 +35,14 @@ checkSystemSupport() {
   fi
 }
 
-prepareExternalVolumes() {
-  if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
-#    echo "empty-node-modules volume does not exist, will be created now."
-    docker volume create --driver local empty-node-modules
-  fi
-    if [[ ! "$(docker volume ls -q | grep empty-vendor)" ]]; then
-#    echo "empty-vendor volume does not exist, will be created now."
-    docker volume create --driver local empty-vendor
-  fi
-    if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
-#    echo "composer-cache volume does not exist, will be created now."
-    docker volume create --driver local composer-cache
-  fi
-}
-
 setupEnvVariables() {
   # prepare default env variables
 
   # source .env.harbor
   if [[ -f .env.harbor ]]; then
+    set -o allexport
     source .env.harbor
+    set +o allexport
   else
     echo "Harbor .env.harbor file is missing, cannot continue."
     exit 1
@@ -99,6 +86,21 @@ setupEnvVariables() {
   fi
 }
 
+prepareExternalVolumes() {
+  if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
+#    echo "empty-node-modules volume does not exist, will be created now."
+    docker volume create --driver local empty-node-modules
+  fi
+    if [[ ! "$(docker volume ls -q | grep empty-vendor)" ]]; then
+#    echo "empty-vendor volume does not exist, will be created now."
+    docker volume create --driver local empty-vendor
+  fi
+    if [[ ! "$(docker volume ls -q | grep composer-cache)" ]]; then
+#    echo "composer-cache volume does not exist, will be created now."
+    docker volume create --driver local composer-cache
+  fi
+}
+
 testRunningContainers() {
   if [[ ! -z $(docker ps -q) ]]; then
     echo "You have some running containers. Are you sure that they are not blocking required ports: $HARBOR_WEB_PORT, $HARBOR_DB_PORT, $HARBOR_DB_TESTING_PORT ?"
@@ -113,117 +115,6 @@ testRunningContainers() {
     else
       exit 0
     fi
-  fi
-}
-
-modifyEnv() {
-  if [[ -f .env ]]; then
-
-    # source actual env values
-    source .env
-
-    if [[ ${DB_PASSWORD} == "" ]]; then
-      export DB_PASSWORD="bestsecret"
-    fi
-
-    # modify values
-    ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:${HARBOR_WEB_PORT}/" .env
-
-    ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=${HARBOR_DB_CONNECTION}/" .env
-    ${SEDCMD} "s/DB_HOST=.*/DB_HOST=${HARBOR_DB_HOST}/" .env
-    ${SEDCMD} "s/DB_PORT=.*/DB_PORT=${HARBOR_DB_PORT}/" .env
-
-    ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/" .env
-    ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/" .env
-    ${SEDCMD} "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env
-
-    ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=${HARBOR_CACHE_DRIVER}/" .env
-    ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=${HARBOR_SESSION_DRIVER}/" .env
-    ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=${HARBOR_REDIS_HOST}/" .env
-
-    # removed bak file
-    if [[ -f .env.bak ]]; then
-      rm .env.bak
-    fi
-  fi
-}
-
-setHarborInEnv() {
-  if [[ ! ".env" == "$1" ]] && [[ ! ".env.example" == "$1" ]]; then
-    return
-  fi
-
-  # source actual env values
-  if [[ ".env" == "$1" ]]; then
-    source .env
-  fi
-
-  echo "Adding values to $1 ..."
-  # add or modify values in .env/.env.example
-  if grep -Fq "#harbor-config" $1; then
-    echo "Harbor config block already in $1"
-  else
-    echo -e "" >>$1
-    echo -e "#harbor-config" >>$1
-  fi
-
-  if grep -Fq "HARBOR_WEB_PORT" $1; then
-    echo "Harbor config HARBOR_WEB_PORT already in $1"
-  else
-    echo -e "HARBOR_WEB_PORT=${HARBOR_WEB_PORT}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_DB_PORT" $1; then
-    echo "Harbor config HARBOR_DB_PORT already in $1"
-  else
-    echo -e "HARBOR_DB_PORT=${HARBOR_DB_PORT}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_DB_TESTING_PORT" $1; then
-    echo "Harbor config HARBOR_DB_TESTING_PORT already in $1"
-  else
-    echo -e "HARBOR_DB_TESTING_PORT=${HARBOR_DB_TESTING_PORT}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_DB_CONNECTION" $1; then
-    echo "Harbor config HARBOR_DB_CONNECTION already in $1"
-  else
-    echo -e "HARBOR_DB_CONNECTION=${HARBOR_DB_CONNECTION}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_PHP_VERSION" $1; then
-    echo "Harbor config HARBOR_PHP_VERSION already in $1"
-  else
-    echo -e "HARBOR_PHP_VERSION=${HARBOR_PHP_VERSION}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_POSTGRES_VERSION" $1; then
-    echo "Harbor config HARBOR_POSTGRES_VERSION already in $1"
-  else
-    echo -e "HARBOR_POSTGRES_VERSION=${HARBOR_POSTGRES_VERSION}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_NODE_VERSION" $1; then
-    echo "Harbor config HARBOR_NODE_VERSION already in $1"
-  else
-    echo -e "HARBOR_NODE_VERSION=${HARBOR_NODE_VERSION}" >>$1
-  fi
-
-  if grep -Fq "HARBOR_SSH_PATH" $1; then
-    echo "Harbor config HARBOR_SSH_PATH already in $1"
-  else
-    echo -e "HARBOR_SSH_PATH=${HARBOR_SSH_PATH}" >>$1
-  fi
-
-  if grep -Fq "XDEBUG_SWITCH" $1; then
-    echo "Harbor config XDEBUG_SWITCH already in $1"
-  else
-    echo -e "XDEBUG_SWITCH=${XDEBUG_SWITCH}" >>$1
-  fi
-
-  # removed bak file
-  if [[ -f "$1.bak" ]]; then
-    rm "$1.bak"
   fi
 }
 
@@ -334,10 +225,8 @@ ssh() {
   fi
 }
 
-initCheckAndPrepareEnv() {
+initLaravelCheckAndCopyEnv() {
   echo "Checking .env and folders ..."
-
-  testRunningContainers
 
   if [[ ! -f .env.example ]]; then
     echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
@@ -348,7 +237,9 @@ initCheckAndPrepareEnv() {
   if [[ ! -f .env ]] && [[ -f .env.example ]]; then
     cp .env.example .env
   fi
+}
 
+initNodeModulesDir() {
   # make dir for node_modules, before docker-compose does
   mkdir -p ./node_modules
 }
@@ -362,28 +253,51 @@ initNpm() {
   ./harbor npm run dev
 }
 
-initPrepareEnv() {
-  # setting harbor in .env and .env.example
-  echo "Setting harbor in .env and .env.example..."
-  setHarborInEnv .env.example
-  setHarborInEnv .env
-
+prepareEnv() {
   echo "Changing .env ..."
   # change values in .env file
-  modifyEnv
+  if [[ -f .env ]]; then
+
+    # source actual env values
+    source .env
+
+    if [[ ${DB_PASSWORD} == "" ]]; then
+      export DB_PASSWORD="bestsecret"
+    fi
+
+    # modify values
+    ${SEDCMD} "s/APP_URL=.*/APP_URL=http:\/\/localhost:${HARBOR_WEB_PORT}/" .env
+
+    ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=${HARBOR_DB_CONNECTION}/" .env
+    ${SEDCMD} "s/DB_HOST=.*/DB_HOST=${HARBOR_DB_HOST}/" .env
+    ${SEDCMD} "s/DB_PORT=.*/DB_PORT=${HARBOR_DB_PORT}/" .env
+
+    ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/" .env
+    ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/" .env
+    ${SEDCMD} "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env
+
+    ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=${HARBOR_CACHE_DRIVER}/" .env
+    ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=${HARBOR_SESSION_DRIVER}/" .env
+    ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=${HARBOR_REDIS_HOST}/" .env
+
+    # removed bak file
+    if [[ -f .env.bak ]]; then
+      rm .env.bak
+    fi
+  fi
 
   # source actual env values
   source .env
 }
 
-initPrepareRedis() {
+addRedis() {
   echo "Adding predis/predis ..."
   # composer require predis and install - in a composer container
   # TODO somehow get response if finished ok  - (exit \$?) not working
   ${COMPOSE} run --rm php bash -c "composer require predis/predis && composer install"
 }
 
-initPrepareContainers() {
+prepareContainers() {
   # need to start first, because it takes time to setup database
   echo "Starting db ..."
   ${COMPOSE} run --rm db wait-for-active-database.sh
@@ -393,12 +307,12 @@ initPrepareContainers() {
   ./harbor restart
 }
 
-init() {
+initLaravel() {
   echo "Setting up your docker environment for this laravel based project."
 
-  initPrepareEnv
+  prepareEnv
 
-  initPrepareRedis
+  addRedis
 
   # art key:generate
   if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
@@ -407,7 +321,7 @@ init() {
     source .env
   fi
 
-  initPrepareContainers
+  prepareContainers
 
   echo "Migrating ..."
   # migrate and seed
@@ -429,8 +343,7 @@ laravel() {
 
   testRunningContainers
 
-  # make dir for node_modules, before docker-compose does
-  mkdir -p ./node_modules
+  initNodeModulesDir
 
   # laravel new
   ${COMPOSE} run --rm php laravel new ./application
@@ -441,7 +354,7 @@ laravel() {
 
   echo "Laravel installed, initializing ..."
 
-  init
+  initLaravel
 }
 
 craftable() {
@@ -452,8 +365,7 @@ craftable() {
 
   testRunningContainers
 
-  # make dir for node_modules, before docker-compose does
-  mkdir -p ./node_modules
+  initNodeModulesDir
 
   # craftable new
   # use php container to create craftable new without install
@@ -469,11 +381,11 @@ craftable() {
 
   echo "Craftable installed, initializing ..."
 
-  initPrepareEnv
+  prepareEnv
 
-  initPrepareRedis
+  addRedis
 
-  initPrepareContainers
+  prepareContainers
 
   echo "Installing craftable ..."
   # install craftable
@@ -619,8 +531,23 @@ main() {
 
     # Initialize harbor for existing project
     init)
-      initCheckAndPrepareEnv
-      init
+      case "$2" in
+
+      # Installing laravel project
+      laravel | craftable)
+        testRunningContainers
+        initLaravelCheckAndCopyEnv
+        initNodeModulesDir
+        initLaravel
+        ;;
+
+      # If not provided, init just standard
+      *)
+        testRunningContainers
+        initNodeModulesDir
+        prepareContainers
+        ;;
+      esac
       ;;
 
     # Installing new laravel or craftable project
