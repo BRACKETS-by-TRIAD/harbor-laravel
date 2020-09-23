@@ -1,21 +1,35 @@
 version: '3.7'
 services:
-# Add your own services configuration here
+  # Add your own services configuration here
 
   nginx:
-#   Add your own nginx configuration here
+  #   Add your own nginx configuration here
 
   php:
-#   Add your own php configuration here
+  #   Add your own php configuration here
 
   db:
-#   Add your own db configuration here
+  #   Add your own db configuration here
+  #   For mysql use:
+  #    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
+  #    environment:
+  #      MYSQL_DATABASE: "${DB_DATABASE:-laravel}"
+  #      MYSQL_USER: "${DB_USERNAME:-root}"
+  #      MYSQL_PASSWORD: "${DB_PASSWORD:-bestsecret}"
+  #      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 
   db-testing:
-#   Add your own db-testing configuration here
+  #   Add your own db-testing configuration here
+  #   For mysql use:
+  #    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
+  #    environment:
+  #      MYSQL_DATABASE: "${DB_DATABASE:-laravel}"
+  #      MYSQL_USER: "${DB_USERNAME:-root}"
+  #      MYSQL_PASSWORD: "${DB_PASSWORD:-bestsecret}"
+  #      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 
   redis:
-#   Add your own redis configuration here
+  #   Add your own redis configuration here
 
   node:
 #   Add your own node configuration here

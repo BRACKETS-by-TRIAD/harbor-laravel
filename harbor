@@ -31,6 +31,7 @@ checkSystemSupport() {
     echo "System detection determined via uname command"
     echo "If the following is empty, could not find uname command: $(which uname)"
     echo "Your reported uname is: $(uname -s)"
+    exit 1
   fi
 }
 
@@ -50,6 +51,16 @@ prepareExternalVolumes() {
 }
 
 setupEnvVariables() {
+  # prepare default env variables
+
+  # source .env.harbor
+  if [[ -f .env.harbor ]]; then
+    source .env.harbor
+  else
+    echo "Harbor .env.harbor file is missing, cannot continue."
+    exit 1
+  fi
+
   # set xdebug host for developing
   if [[ $(docker version --format '{{.Server.Version}}') > 18.03.0 ]]; then
     HARBOR_XDEBUG_HOST=host.docker.internal
@@ -73,39 +84,6 @@ setupEnvVariables() {
     SEDCMD="sed -i .bak"
   fi
 
-  # prepare default env variables
-  export HARBOR_WEB_PORT=${HARBOR_WEB_PORT:-80}
-  export HARBOR_DB_PORT=${HARBOR_DB_PORT:-5432}
-  export HARBOR_DB_TESTING_PORT=${HARBOR_DB_TESTING_PORT:-5433}
-  export HARBOR_DB_CONNECTION=${HARBOR_DB_CONNECTION:-pgsql}
-  export HARBOR_DB_HOST=${HARBOR_DB_HOST:-db}
-
-  export HARBOR_REDIS_HOST=${HARBOR_REDIS_HOST:-redis}
-
-  export HARBOR_CACHE_DRIVER=${HARBOR_CACHE_DRIVER:-redis}
-  export HARBOR_SESSION_DRIVER=${HARBOR_SESSION_DRIVER:-redis}
-
-  export HARBOR_PHP_VERSION=${HARBOR_PHP_VERSION:-7.4}
-  export HARBOR_POSTGRES_VERSION=${HARBOR_POSTGRES_VERSION:-12}
-  export HARBOR_NODE_VERSION=${HARBOR_NODE_VERSION:-12}
-
-  export HARBOR_NGINX_CONTAINER_VERSION=${HARBOR_NGINX_CONTAINER_VERSION:-1}
-  export HARBOR_PHP_CONTAINER_VERSION=${HARBOR_PHP_CONTAINER_VERSION:-1}
-  export HARBOR_POSTGRES_CONTAINER_VERSION=${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
-  export HARBOR_NODE_CONTAINER_VERSION=${HARBOR_NODE_CONTAINER_VERSION:-1}
-
-  export HARBOR_SSH_PATH=${HARBOR_SSH_PATH:-./docker/php/ssh}
-  export HARBOR_TERMINAL_EMULATOR=${HARBOR_TERMINAL_EMULATOR:-JetBrains-JediTerm}
-
-  export HARBOR_USER_UID=${HARBOR_USER_UID:-$UID}
-  export HARBOR_USER_GID=${HARBOR_USER_GID:-$GID}
-
-  export XDEBUG_SWITCH=${XDEBUG_SWITCH:-off}
-
-  export DB_DATABASE=${DB_DATABASE:-laravel}
-  export DB_USERNAME=${DB_USERNAME:-root}
-  export DB_PASSWORD=${DB_PASSWORD:-bestsecret}
-
   # is the environment running
   PSRESULT="$(docker-compose ps -q)"
   if [[ ! -z "$PSRESULT" ]]; then
@@ -115,7 +93,10 @@ setupEnvVariables() {
   fi
 
   # create base docker-compose command to run
-  COMPOSE="docker-compose -f docker-compose.yml -f docker-compose.override.yml"
+  COMPOSE="docker-compose -f docker-compose.yml"
+  if [[ -f "docker-compose.override.yml" ]]; then
+    COMPOSE="$COMPOSE -f docker-compose.override.yml"
+  fi
 }
 
 testRunningContainers() {
@@ -360,7 +341,7 @@ initCheckAndPrepareEnv() {
 
   if [[ ! -f .env.example ]]; then
     echo "No .env.example file found within current working directory $(pwd), this is not a laravel project, so please run harbor install"
-    exit 0
+    exit 1
   fi
 
   # cp .env.example .env if .env is missing
@@ -659,7 +640,7 @@ main() {
       # If not provided, show what to use
       *)
         echo $"Usage: $0 $1 {laravel|craftable}"
-        exit 1
+        exit 0
         ;;
       esac
       ;;

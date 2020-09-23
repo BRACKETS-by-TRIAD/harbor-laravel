@@ -3,11 +3,11 @@ services:
   nginx:
     image: dejwcake/nginx:${HARBOR_NGINX_CONTAINER_VERSION:-1}
     ports:
-     - "${HARBOR_WEB_PORT:-80}:80"
+      - "${HARBOR_WEB_PORT:-80}:80"
     volumes:
-     - ./public/:/var/www/html/public:delegated
+      - ./public/:/var/www/html/public:delegated
     networks:
-     - harbornet
+      - harbornet
     depends_on:
       - php
     restart: on-failure
@@ -21,15 +21,15 @@ services:
       HARBOR_USER_UID: "${HARBOR_USER_UID:-1000}"
       TERMINAL_EMULATOR: "${HARBOR_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
     volumes:
-     - .:/var/www/html:delegated
-     - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/root/.ssh:delegated
-     - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/home/harbor/.ssh:delegated
-     - psy-history-root:/root/.config
-     - psy-history-harbor:/home/harbor/.config
-     - empty-node-modules:/var/www/html/node_modules
-     - composer-cache:/home/harbor/.composer/cache
+      - .:/var/www/html:delegated
+      - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/root/.ssh:delegated
+      - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/home/harbor/.ssh:delegated
+      - psy-history-root:/root/.config
+      - psy-history-harbor:/home/harbor/.config
+      - empty-node-modules:/var/www/html/node_modules
+      - composer-cache:/home/harbor/.composer/cache
     networks:
-     - harbornet
+      - harbornet
     depends_on:
       - db
       - redis
@@ -38,19 +38,19 @@ services:
   db:
     image: dejwcake/postgres${HARBOR_POSTGRES_VERSION:-12}:${HARBOR_POSTGRES_CONTAINER_VERSION:-1}
     ports:
-     - "${HARBOR_DB_PORT:-5432}:${HARBOR_DB_PORT:-5432}"
+      - "${HARBOR_DB_PORT:-5432}:${HARBOR_DB_PORT:-5432}"
     environment:
       POSTGRES_DB: "${DB_DATABASE:-laravel}"
       POSTGRES_USER: "${DB_USERNAME:-root}"
       POSTGRES_PASSWORD: "${DB_PASSWORD:-bestsecret}"
       PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
     volumes:
-     - db-data:/var/lib/postgresql/data
-     - ./.harbor/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
-     - ./.harbor/db/export:/export:delegated
-     - ./.harbor/db/import:/import:cached
+      - db-data:${HARBOR_DB_DATA_PATH:-/var/lib/postgresql/data}
+      - ./.harbor/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
+      - ./.harbor/db/export:/export:delegated
+      - ./.harbor/db/import:/import:cached
     networks:
-     - harbornet
+      - harbornet
     restart: on-failure
 
   db-testing:
@@ -64,10 +64,10 @@ services:
       PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
     user: postgres
     volumes:
-     - db-testing-data:/var/lib/postgresql/data:delegated
-     - ./.harbor/db-testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
+      - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/postgresql/data}:delegated
+      - ./.harbor/db-testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
     networks:
-     - harbornet
+      - harbornet
 
   redis:
     image: redis:alpine
@@ -81,11 +81,11 @@ services:
     image: dejwcake/node${HARBOR_NODE_VERSION:-12}:${HARBOR_NODE_CONTAINER_VERSION:-1}
     user: node
     volumes:
-     - .:/var/www/html:delegated
-     - ./public:/var/www/html/public
-     - empty-vendor:/var/www/html/vendor
+      - .:/var/www/html:delegated
+      - ./public:/var/www/html/public
+      - empty-vendor:/var/www/html/vendor
     networks:
-     - harbornet
+      - harbornet
 
 networks:
   harbornet:
