@@ -400,18 +400,37 @@ craftable() {
 }
 
 main() {
-  checkSystemSupport "$@"
-  setupEnvVariables "$@"
-
-  # Source .env, which can over-ride env vars
-  if [[ -f .env ]]; then
-    source .env
-  fi
-
-  prepareExternalVolumes
-
   # If we pass any arguments...
   if [[ $# -gt 0 ]]; then
+
+    case "$1" in
+    #
+    # Type and version
+    #
+
+    # Get version
+    -v | --version)
+      echo ${VERSION}
+      exit 0
+      ;;
+
+    # Get type
+    -t | --type)
+      echo ${TYPE}
+      exit 0
+      ;;
+
+    esac
+
+    checkSystemSupport "$@"
+    setupEnvVariables "$@"
+
+    # Source .env, which can over-ride env vars
+    if [[ -f .env ]]; then
+      source .env
+    fi
+
+    prepareExternalVolumes
 
     case "$1" in
     #
