@@ -5,7 +5,7 @@ services:
     ports:
       - "${HARBOR_WEB_PORT:-80}:80"
     volumes:
-      - ./public/:/var/www/html:delegated
+      - ./public/:/var/www/html/public:delegated
     networks:
       - harbornet
     depends_on:
