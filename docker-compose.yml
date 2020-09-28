@@ -22,8 +22,8 @@ services:
       TERMINAL_EMULATOR: "${HARBOR_TERMINAL_EMULATOR:-JetBrains-JediTerm}"
     volumes:
       - .:/var/www/html:delegated
-      - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/root/.ssh:delegated
-      - ${HARBOR_SSH_PATH:-./.harbor/php/ssh}:/home/harbor/.ssh:delegated
+      - ${HARBOR_SSH_PATH:-./.harbor/ssh}:/root/.ssh:delegated
+      - ${HARBOR_SSH_PATH:-./.harbor/ssh}:/home/harbor/.ssh:delegated
       - psy-history-root:/root/.config
       - psy-history-harbor:/home/harbor/.config
       - empty-node-modules:/var/www/html/node_modules

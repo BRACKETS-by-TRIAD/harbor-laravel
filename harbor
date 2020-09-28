@@ -591,20 +591,6 @@ main() {
       esac
       ;;
 
-    #
-    # Type and version
-    #
-
-    # Get version
-    -v | --version)
-      echo ${VERSION}
-      ;;
-
-    # Get type
-    -t | --type)
-      echo ${TYPE}
-      ;;
-
     # Else, pass args to docker-compose
     *)
       ${COMPOSE} "$@"
