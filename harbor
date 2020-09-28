@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=2.0.7
+VERSION=2.0.8
 
 # check system if supported
 UNAMEOUT="$(uname -s)"
@@ -211,6 +211,20 @@ function setHarborInEnv {
 # main script
 # If we pass any arguments...
 if [[ $# -gt 0 ]]; then
+
+    case "$1" in
+        # Get version
+        -v|--version)
+            echo ${VERSION}
+            exit 0
+            ;;
+
+        # Get type
+        -t|--type)
+            echo ${TYPE}
+            exit 0
+            ;;
+    esac
 
     # Source .env, which can over-ride env vars
     if [[ -f .env ]]; then
@@ -639,16 +653,6 @@ if [[ $# -gt 0 ]]; then
                     exit 1
                     ;;
             esac
-            ;;
-
-        # Get version
-        -v|--version)
-            echo ${VERSION}
-            ;;
-
-        # Get type
-        -t|--type)
-            echo ${TYPE}
             ;;
 
         # Else, pass args to docker-compose
