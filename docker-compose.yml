@@ -63,7 +63,6 @@ services:
       POSTGRES_PASSWORD: "${DB_PASSWORD:-bestsecret}"
       PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
     volumes:
-      - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/postgresql/data}:delegated
       - ./.harbor/db-testing/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:cached
     networks:
       - harbornet
@@ -93,8 +92,6 @@ networks:
 
 volumes:
   db-data:
-    driver: "local"
-  db-testing-data:
     driver: "local"
   redis-data:
     driver: "local"
