@@ -37,10 +37,10 @@ COPY php-fpm.conf /etc/php/7.1/fpm/php-fpm.conf
 COPY www.conf /etc/php/7.1/fpm/pool.d/www.conf
 COPY xdebug.ini /etc/php/7.1/mods-available/xdebug.ini
 
-RUN mkdir /root/.config \
+RUN mkdir -p /root/.config \
     && chown -R root:root /root/.config
 
-RUN mkdir /home/harbor/.config \
+RUN mkdir -p /home/harbor/.config \
     && chown -R harbor /home/harbor/.config
 
 EXPOSE 9000
