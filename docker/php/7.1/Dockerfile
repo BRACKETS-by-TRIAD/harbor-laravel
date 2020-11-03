@@ -22,7 +22,7 @@ RUN apt-get update \
        php7.1-imagick php7.1-zip php7.1-bcmath php7.1-xdebug php7.1-soap php7.1-redis \
        php7.1-bcmath \
     && gosu nobody true \
-    && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
+    && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer --version=1.10.17 \
     && mkdir /run/php \
     && gosu harbor composer global require "laravel/installer" \
     && gosu harbor composer global require "brackets/craftable-installer" \
