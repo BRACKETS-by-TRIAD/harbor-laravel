@@ -290,13 +290,6 @@ prepareEnv() {
     source .env
 }
 
-addRedis() {
-    echo "Adding predis/predis ..."
-    # composer require predis and install - in a composer container
-    # TODO somehow get response if finished ok  - (exit \$?) not working
-    ${COMPOSE} run --rm php bash -c "composer require predis/predis && composer install"
-}
-
 prepareContainers() {
     # need to start first, because it takes time to setup database
     echo "Starting db ..."
