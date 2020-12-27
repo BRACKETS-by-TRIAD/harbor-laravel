@@ -27,7 +27,7 @@ services:
       - ${HARBOR_HISTORY_PATH:-./.harbor/history}/root_bash_history:/root/.bash_history
       - ${HARBOR_HISTORY_PATH:-./.harbor/history}/harbor_bash_history:/home/harbor/.bash_history
       - empty-node-modules:/var/www/html/node_modules
-      - composer-cache:/home/harbor/.composer/cache
+      - composer-cache:/home/harbor/.config/composer/cache
     networks:
       - harbornet
     depends_on:
