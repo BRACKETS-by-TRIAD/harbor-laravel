@@ -15,7 +15,41 @@ This script handles the current instance. To create new, install or update harbo
 
 ### From 2.0 to 3.0 ###
 
-TODO
+Harbor 3.0 has been completely rewritten from Harbor 2.0. It is using prebuild docker images. Therefore, the upgrade have to be done manually.
+
+1. backup all data from `pgsql` container, you can use `./harbor pg_dump` command. In version 3.0 container has a different name and volume, so you have to move data if needed. In case of no important data, just skip this step. 
+2. stop harbor if running `./harbor stop`
+3. backup `docker` folder and `docker-compose.yml` file. 
+4. remove `docker` folder, `docker-compose.yml`, `harbor`, `harbor-README.md` files.
+5. run `harbor install craftable` command in project folder
+6. change values in `.env.harbor` according #docker-config section in `.env` file, map ENV values as follows:
+    ```
+    DOCKER_APP_PORT -> HARBOR_WEB_PORT
+    DOCKER_PGSQL_PORT -> HARBOR_DB_PORT
+    DOCKER_PGSQL_TEST_PORT -> HARBOR_DB_TESTING_PORT
+    DOCKER_PGSQL_TEST_DIR -> is not used anymore
+    DOCKER_PHP_VERSION -> HARBOR_PHP_VERSION
+    DOCKER_POSTGRES_VERSION -> HARBOR_POSTGRES_VERSION
+    DOCKER_NODE_VERSION -> HARBOR_NODE_VERSION
+    DOCKER_PHP_XDEBUG -> XDEBUG_SWITCH
+    ``` 
+    also, change this values in `.env.harbor` according your `.env` file
+    ```
+    DB_DATABASE
+    DB_USERNAME
+    DB_PASSWORD
+    ``` 
+   Beware `.env.harbor` file is committed, so if you use some secret password for db in development, leave the password empty in `.env.harbor`
+7. change `DB_HOST` env value in `.env` and `.env.example` file to `HARBOR_DB_HOST` env value in `.env.harbor`, probably the value is `db`.
+8. check other env values in `.env.harbor`
+9. remove #docker-config section in `.env` and `.env.example` files
+10. if you use standard `docker-compose.yml` and `Dockerfiles` for images in version 2.0, you can sgo to step 11.
+11. modify `docker-compose.override.yml` according the backed up `docker-compose.yml` changes you have made. If you need some special changes in Dockerfiles, you can extend provided images and prepare your Dockerfiles used in `docker-compose.override.yml` file.
+12. move folders `docker-entrypoint-initdb.d`, `export` and `import` from your backup docker folder `docker/pgsql` to `.harbor/db`
+13. move folder `docker-entrypoint-initdb.d` from your backup docker folder `docker/testing` to `.harbor/db-testing`
+14. move ssh keys from your backup docker folder `docker/php/ssh` to `.harbor/ssh` probably 3 files (`id_rsa`, `id_rsa.pub`, `known_hosts`)
+15. import backup database data or just run `./harbor art migrate`
+16. now you should have a working harbor, just run `./harbor start`
 
 ### From 1.0 to 2.0 ###
 
