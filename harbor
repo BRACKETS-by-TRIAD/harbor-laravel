@@ -348,6 +348,11 @@ laravel() {
     # laravel new
     ${COMPOSE} run --rm php laravel new ./application
 
+    # move sail docker-compose.yml to docker-compose-sail.yml
+    if [[ -f application/docker-compose.yml ]]; then
+        mv application/docker-compose.yml application/docker-compose-sail.yml
+    fi
+
     # move application content to this folder
     mv application/* application/.[!.]* .
     rm -rf ./application
@@ -373,6 +378,11 @@ craftable() {
         ${COMPOSE} run --rm php craftable new --dev --no-install ./application
     else
         ${COMPOSE} run --rm php craftable new --no-install ./application
+    fi
+
+    # move sail docker-compose.yml to docker-compose-sail.yml
+    if [[ -f application/docker-compose.yml ]]; then
+        mv application/docker-compose.yml application/docker-compose-sail.yml
     fi
 
     # move application content to this folder
