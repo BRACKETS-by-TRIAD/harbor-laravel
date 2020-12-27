@@ -13,7 +13,7 @@ services:
     restart: on-failure
 
   php:
-    image: dejwcake/php${HARBOR_PHP_VERSION:-7.4}:${HARBOR_PHP_CONTAINER_VERSION:-1}
+    image: dejwcake/php${HARBOR_PHP_VERSION:-8.0}:${HARBOR_PHP_CONTAINER_VERSION:-1}
     environment:
       APP_ENV: "${APP_ENV:-local}"
       XDEBUG_HOST: "${HARBOR_XDEBUG_HOST:-host.docker.internal}"
