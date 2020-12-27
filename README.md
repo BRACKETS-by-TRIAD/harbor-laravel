@@ -34,9 +34,10 @@ If you need to customize some harbor/docker settings, it is recommended to modif
 Currently supported versions are:
 
 ```
-PHP 7.2
+PHP 7.2 - cannot install laravel/craftable
 PHP 7.3
 PHP 7.4
+PHP 8.0
 
 MariaDB 10.5
 
@@ -125,7 +126,7 @@ In this section you can find all commands supported by harbor:
 
 Support for `yarn` and `gulp` has been dropped.
 
-#### PGSQL container commands ####
+#### DB container commands ####
 
 `harbor db` will run `psql`/`mysql` command on db container with user and host form .env file and pass all additional arguments to `psql`/`mysql` command.
 
