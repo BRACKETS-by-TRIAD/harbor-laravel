@@ -177,7 +177,6 @@ db() {
     fi
     if [[ "$EXEC" == "yes" ]]; then
         ${COMPOSE} exec \
-            -u harbor \
             db \
             ${DB_COMMAND} "$@"
     else
@@ -197,7 +196,6 @@ dump() {
     fi
     if [[ "$EXEC" == "yes" ]]; then
         ${COMPOSE} exec \
-            -u harbor \
             db \
             ${DB_COMMAND} "$@"
     else
