@@ -312,8 +312,6 @@ initLaravel() {
 
     prepareEnv
 
-    addRedis
-
     # art key:generate
     if [[ -z "${APP_KEY}" ]] || [[ ${APP_KEY} == "SomeRandomString" ]]; then
         ${COMPOSE} run --rm php php artisan key:generate
@@ -346,7 +344,7 @@ laravel() {
     initNodeModulesDir
 
     # laravel new
-    ${COMPOSE} run --rm php laravel new ./application
+    ${COMPOSE} run --rm php laravel new application
 
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
@@ -392,8 +390,6 @@ craftable() {
     echo "Craftable installed, initializing ..."
 
     prepareEnv
-
-    addRedis
 
     prepareContainers
 
