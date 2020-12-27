@@ -30,7 +30,7 @@ services:
 #      MYSQL_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 #      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 #    volumes:
-#     - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/postgresql/data}:delegated
+#     - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/mysql}:delegated
 
   redis:
   # Add your own redis configuration here
