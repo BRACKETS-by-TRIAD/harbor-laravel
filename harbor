@@ -464,6 +464,12 @@ main() {
       ;;
 
     # Rebuild the containers
+    pull)
+      shift 1
+      ${COMPOSE} pull
+      ;;
+
+    # Rebuild the containers
     rebuild)
       shift 1
       rebuild "$@"
