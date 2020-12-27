@@ -86,6 +86,15 @@ setupEnvVariables() {
     fi
 }
 
+touchHistory() {
+    if [[ ! -f ./.harbor/history/harbor_bash_history ]]; then
+        touch ./.harbor/history/harbor_bash_history
+    fi
+    if [[ ! -f ./.harbor/history/root_bash_history ]]; then
+        touch ./.harbor/history/root_bash_history
+    fi
+}
+
 prepareExternalVolumes() {
     if [[ ! "$(docker volume ls -q | grep empty-node-modules)" ]]; then
         #    echo "empty-node-modules volume does not exist, will be created now."
@@ -424,6 +433,7 @@ main() {
 
         checkSystemSupport "$@"
         setupEnvVariables "$@"
+        touchHistory
 
         # Source .env, which can over-ride env vars
         if [[ -f .env ]]; then
