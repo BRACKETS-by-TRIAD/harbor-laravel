@@ -98,7 +98,7 @@ In file `.env.harbor` you have to change the config for DB. Comment out Postgres
 #HARBOR_DB_TESTING_PORT=5433
 #HARBOR_DB_DATA_PATH=/var/lib/postgresql/data
 #HARBOR_DB_USER=postgres
-# Mysql/Mariadb
+# Mariadb
 HARBOR_DB_CONNECTION=mysql
 HARBOR_DB_PORT=3306
 HARBOR_DB_TESTING_PORT=3307
