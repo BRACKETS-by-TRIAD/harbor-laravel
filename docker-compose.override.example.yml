@@ -1,16 +1,16 @@
 version: '3.7'
-services:
+#services:
   # Add your own services configuration here
 
-  nginx:
+#  nginx:
   # Add your own nginx configuration here
 #    volumes:
 #      - .harbor/nginx/conf.d:/etc/nginx/conf.d
 
-  php:
+#  php:
   # Add your own php configuration here
 
-  db:
+#  db:
   # Add your own db configuration here
   # For mysql use:
 #    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
@@ -20,7 +20,7 @@ services:
 #      MYSQL_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 #      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-bestsecret}"
 
-  db-testing:
+#  db-testing:
   # Add your own db-testing configuration here
   # For mysql use:
 #    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
@@ -32,10 +32,10 @@ services:
 #    volumes:
 #     - db-testing-data:${HARBOR_DB_DATA_PATH:-/var/lib/mysql}:delegated
 
-  redis:
+#  redis:
   # Add your own redis configuration here
 
-  node:
+#  node:
   # Add your own node configuration here
 
 #networks:
