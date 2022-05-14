@@ -72,17 +72,21 @@ PHP 7.2 - cannot install laravel/craftable
 PHP 7.3
 PHP 7.4
 PHP 8.0
+PHP 8.1
 
 MariaDB 10.5
+MariaDB 10.7
 
 Postgress 9
 Postgress 10
 Postgress 11
 Postgress 12
+Postgress 14
 
 Node 8
 Node 10
 Node 12
+Node 16
 ```
 
 ## Databases ##

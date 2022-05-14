@@ -13,7 +13,7 @@ version: '3.7'
 #  db:
   # Add your own db configuration here
   # For mysql use:
-#    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
+#    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.7}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
 #    environment:
 #      MYSQL_DATABASE: "${DB_DATABASE:-laravel}"
 #      MYSQL_USER: "${DB_USERNAME:-root}"
@@ -23,7 +23,7 @@ version: '3.7'
 #  db-testing:
   # Add your own db-testing configuration here
   # For mysql use:
-#    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.5}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
+#    image: dejwcake/mariadb${HARBOR_MARIADB_VERSION:-10.7}:${HARBOR_MARIADB_CONTAINER_VERSION:-1}
 #    environment:
 #      MYSQL_DATABASE: "${DB_DATABASE:-laravel}"
 #      MYSQL_USER: "${DB_USERNAME:-root}"
