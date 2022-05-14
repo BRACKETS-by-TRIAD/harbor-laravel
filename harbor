@@ -398,6 +398,9 @@ craftable() {
 
     echo "Installing craftable ..."
     # install craftable
+    ./harbor comp require "brackets/craftable"
+    ./harbor comp require --dev "brackets/admin-generator"
+    ./harbor art craftable:test-db-connection
     ./harbor art craftable:install
 
     initNpm
