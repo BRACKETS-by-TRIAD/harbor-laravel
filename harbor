@@ -376,9 +376,9 @@ craftable() {
     # craftable new
     # use php container to create craftable new without install
     if [[ "$3" == "--dev" ]]; then
-        ${COMPOSE} run --rm php craftable new --dev --no-install ./application
+        ${COMPOSE} run --rm php craftable new --dev ./application
     else
-        ${COMPOSE} run --rm php craftable new --no-install ./application
+        ${COMPOSE} run --rm php craftable new ./application
     fi
 
     # move sail docker-compose.yml to docker-compose-sail.yml
