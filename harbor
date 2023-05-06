@@ -336,35 +336,8 @@ initLaravel() {
     echo "All set."
 }
 
-laravel() {
+installLaravel() {
     echo "Installing new laravel application to current folder."
-
-    # remove all containers and volumes
-    ${COMPOSE} down -v
-
-    testRunningContainers
-
-    initNodeModulesDir
-
-    # laravel new
-    ${COMPOSE} run --rm php laravel new application
-
-    # move sail docker-compose.yml to docker-compose-sail.yml
-    if [[ -f application/docker-compose.yml ]]; then
-        mv application/docker-compose.yml application/docker-compose-sail.yml
-    fi
-
-    # move application content to this folder
-    mv application/* application/.[!.]* .
-    rm -rf ./application
-
-    echo "Laravel installed, initializing ..."
-
-    initLaravel
-}
-
-craftable() {
-    echo "Installing new craftable application to current folder."
 
     # remove all containers and volumes
     ${COMPOSE} down -v
@@ -375,18 +348,32 @@ craftable() {
 
     # use php container to create laravel application
     ${COMPOSE} run --rm php composer create-project laravel/laravel ./application
-    echo "laravel installed"
+    echo "Laravel installed"
 
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
-        echo "move sail docker-compose.yml to docker-compose-sail.yml"
+        echo "Move sail docker-compose.yml to docker-compose-sail.yml"
         mv application/docker-compose.yml application/docker-compose-sail.yml
     fi
 
     # move application content to this folder
-    echo "move application and remove dir"
+    echo "Move application and remove dir"
     mv application/* application/.[!.]* .
     rm -rf ./application
+
+    echo "Laravel installed"
+}
+
+laravel() {
+    installLaravel
+
+    echo "Laravel initializing ..."
+
+    initLaravel
+}
+
+craftable() {
+    installLaravel
 
 #    echo "require craftable"
 #    ${COMPOSE} run --rm php composer require "brackets/craftable"
