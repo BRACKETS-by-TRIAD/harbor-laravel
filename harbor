@@ -391,6 +391,7 @@ setCraftableRepositories() {
         ${COMPOSE} run --rm php composer config repositories.craftable git https://github.com/dejwCake/craftable.git
         ${COMPOSE} run --rm php composer config repositories.craftable-media git https://github.com/dejwCake/craftable-media.git
         ${COMPOSE} run --rm php composer config repositories.craftable-translatable git https://github.com/dejwCake/craftable-translatable.git
+        ${COMPOSE} run --rm php composer config minimum-stability dev
     fi
 }
 
