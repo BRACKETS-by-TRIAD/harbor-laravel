@@ -382,15 +382,15 @@ setCraftableRepositories() {
     if [[ -f composer.json ]]; then
 
         # modify values
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/advanced-logger.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/admin-generator.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/admin-auth.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/admin-listing.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/admin-translations.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/admin-ui.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/craftable.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/craftable-media.git
-        ${COMPOSE} run --rm php composer config repositories.repo-name git https://github.com/dejwCake/craftable-translatable.git
+        ${COMPOSE} run --rm php composer config repositories.advanced-logger git https://github.com/dejwCake/advanced-logger.git
+        ${COMPOSE} run --rm php composer config repositories.admin-generator git https://github.com/dejwCake/admin-generator.git
+        ${COMPOSE} run --rm php composer config repositories.admin-auth git https://github.com/dejwCake/admin-auth.git
+        ${COMPOSE} run --rm php composer config repositories.admin-listing git https://github.com/dejwCake/admin-listing.git
+        ${COMPOSE} run --rm php composer config repositories.admin-translations git https://github.com/dejwCake/admin-translations.git
+        ${COMPOSE} run --rm php composer config repositories.admin-ui git https://github.com/dejwCake/admin-ui.git
+        ${COMPOSE} run --rm php composer config repositories.craftable git https://github.com/dejwCake/craftable.git
+        ${COMPOSE} run --rm php composer config repositories.craftable-media git https://github.com/dejwCake/craftable-media.git
+        ${COMPOSE} run --rm php composer config repositories.craftable-translatable git https://github.com/dejwCake/craftable-translatable.git
     fi
 }
 
@@ -404,10 +404,10 @@ craftable() {
     echo "Require craftable"
 #    ${COMPOSE} run --rm php composer require "brackets/craftable"
     ${COMPOSE} run --rm php composer require psr/http-message:1.1
-    ${COMPOSE} run --rm php composer require "dejwcake/craftable"
+    ${COMPOSE} run --rm php composer require dejwcake/craftable
     echo "Require admin-generator"
 #    ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
-    ${COMPOSE} run --rm php composer require --dev "dejwcake/admin-generator"
+    ${COMPOSE} run --rm php composer require --dev dejwcake/admin-generator
 
     echo "Craftable installed, initializing ..."
 
