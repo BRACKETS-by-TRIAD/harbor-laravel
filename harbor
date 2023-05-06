@@ -384,6 +384,7 @@ craftable() {
     cd ./application
     ${COMPOSE} run --rm php composer require "brackets/craftable"
     ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
+    cd ..
 
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
