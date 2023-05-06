@@ -257,7 +257,13 @@ initNpm() {
     ./harbor npm install
 
     # npm run dev
-    ./harbor npm run dev
+    ./harbor npm run build
+}
+
+initNpmCraftable() {
+  initNpm
+
+  ./harbor npm run craftable-dev
 }
 
 prepareEnv() {
@@ -372,31 +378,105 @@ laravel() {
     initLaravel
 }
 
+setCraftableRepositories() {
+    if [[ -f composer.json ]]; then
+
+        # modify values
+        ${SEDCMD} "s/\"prefer-stable\": true/\"prefer-stable\": true,
+        \"repositories\": [
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/advanced-logger.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/admin-generator.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/admin-auth.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/admin-listing.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/admin-translations.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/admin-ui.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/craftable.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/craftable-media.git\"
+             },
+             {
+                 \"type\": \"git\",
+                 \"url\": \"https://github.com/dejwCake/craftable-translatable.git\"
+             }
+         ],
+/" composer.json
+
+        ${SEDCMD} "s/DB_CONNECTION=.*/DB_CONNECTION=${HARBOR_DB_CONNECTION}/" .env
+        ${SEDCMD} "s/DB_HOST=.*/DB_HOST=${HARBOR_DB_HOST}/" .env
+        ${SEDCMD} "s/DB_PORT=.*/DB_PORT=${HARBOR_DB_PORT}/" .env
+
+        if [[ -f .env.harbor ]]; then
+            source .env.harbor
+        fi
+        ${SEDCMD} "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/" .env
+        ${SEDCMD} "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/" .env
+        ${SEDCMD} "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env
+
+        ${SEDCMD} "s/CACHE_DRIVER=.*/CACHE_DRIVER=${HARBOR_CACHE_DRIVER}/" .env
+        ${SEDCMD} "s/SESSION_DRIVER=.*/SESSION_DRIVER=${HARBOR_SESSION_DRIVER}/" .env
+        ${SEDCMD} "s/REDIS_HOST=.*/REDIS_HOST=${HARBOR_REDIS_HOST}/" .env
+
+        # removed bak file
+        if [[ -f .env.bak ]]; then
+            rm .env.bak
+        fi
+    fi
+}
+
 craftable() {
     installLaravel
 
-#    echo "require craftable"
+    # TODO remove later
+    echo "Add repositories"
+    setCraftableRepositories
+
+    echo "Require craftable"
 #    ${COMPOSE} run --rm php composer require "brackets/craftable"
-#    echo "require admin-generator"
+    ${COMPOSE} run --rm php composer require psr/http-message:1.1
+    ${COMPOSE} run --rm php composer require "dejwcake/craftable"
+    echo "Require admin-generator"
 #    ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
-#
-#    echo "Craftable installed, initializing ..."
-#
-#    prepareEnv
-#
-#    prepareContainers
-#
-#    echo "Installing craftable ..."
-#    # install craftable
-#    ./harbor art craftable:test-db-connection
-#    ./harbor art craftable:install
-#
-#    initNpm
-#
-#    # stop docker containers
-#    ./harbor stop
-#
-#    echo "All set."
+    ${COMPOSE} run --rm php composer require --dev "dejwcake/admin-generator"
+
+    echo "Craftable installed, initializing ..."
+
+    prepareEnv
+
+    prepareContainers
+
+    echo "Installing craftable ..."
+    # install craftable
+    ./harbor art craftable:test-db-connection
+    ./harbor art craftable:install
+
+    initNpmCraftable
+
+    # stop docker containers
+    ./harbor stop
+
+    echo "All set."
 }
 
 main() {
