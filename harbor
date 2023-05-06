@@ -380,18 +380,23 @@ craftable() {
     else
         ${COMPOSE} run --rm php craftable new ./application
     fi
+    echo "craftable new finished"
 
     cd ./application
+    echo "require craftable"
     ${COMPOSE} run --rm php composer require "brackets/craftable"
+    echo "require admin-generator"
     ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
     cd ..
 
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
+        echo "move sail docker-compose.yml to docker-compose-sail.yml"
         mv application/docker-compose.yml application/docker-compose-sail.yml
     fi
 
     # move application content to this folder
+    echo "move application and remove dir"
     mv application/* application/.[!.]* .
     rm -rf ./application
 
