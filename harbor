@@ -381,6 +381,10 @@ craftable() {
         ${COMPOSE} run --rm php craftable new ./application
     fi
 
+    cd ./application
+    ${COMPOSE} run --rm php composer require "brackets/craftable"
+    ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
+
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
         mv application/docker-compose.yml application/docker-compose-sail.yml
@@ -398,6 +402,7 @@ craftable() {
 
     echo "Installing craftable ..."
     # install craftable
+    ./harbor art craftable:test-db-connection
     ./harbor art craftable:install
 
     initNpm
