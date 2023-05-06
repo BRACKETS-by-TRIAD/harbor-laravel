@@ -373,14 +373,9 @@ craftable() {
 
     initNodeModulesDir
 
-    # craftable new
-    # use php container to create craftable new without install
-    if [[ "$3" == "--dev" ]]; then
-        ${COMPOSE} run --rm php craftable new --dev ./application
-    else
-        ${COMPOSE} run --rm php craftable new ./application
-    fi
-    echo "craftable new finished"
+    # use php container to create laravel application
+    ${COMPOSE} run --rm php composer create-project laravel/laravel ./application
+    echo "laravel installed"
 
     # move sail docker-compose.yml to docker-compose-sail.yml
     if [[ -f application/docker-compose.yml ]]; then
@@ -393,28 +388,28 @@ craftable() {
     mv application/* application/.[!.]* .
     rm -rf ./application
 
-    echo "require craftable"
-    ${COMPOSE} run --rm php composer require "brackets/craftable"
-    echo "require admin-generator"
-    ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
-
-    echo "Craftable installed, initializing ..."
-
-    prepareEnv
-
-    prepareContainers
-
-    echo "Installing craftable ..."
-    # install craftable
-    ./harbor art craftable:test-db-connection
-    ./harbor art craftable:install
-
-    initNpm
-
-    # stop docker containers
-    ./harbor stop
-
-    echo "All set."
+#    echo "require craftable"
+#    ${COMPOSE} run --rm php composer require "brackets/craftable"
+#    echo "require admin-generator"
+#    ${COMPOSE} run --rm php composer require --dev "brackets/admin-generator"
+#
+#    echo "Craftable installed, initializing ..."
+#
+#    prepareEnv
+#
+#    prepareContainers
+#
+#    echo "Installing craftable ..."
+#    # install craftable
+#    ./harbor art craftable:test-db-connection
+#    ./harbor art craftable:install
+#
+#    initNpm
+#
+#    # stop docker containers
+#    ./harbor stop
+#
+#    echo "All set."
 }
 
 main() {
