@@ -378,19 +378,10 @@ laravel() {
     initLaravel
 }
 
-setCraftableRepositories() {
+setCraftableStability() {
     if [[ -f composer.json ]]; then
 
         # modify values
-        ${COMPOSE} run --rm php composer config repositories.advanced-logger git https://github.com/dejwCake/advanced-logger.git
-        ${COMPOSE} run --rm php composer config repositories.admin-generator git https://github.com/dejwCake/admin-generator.git
-        ${COMPOSE} run --rm php composer config repositories.admin-auth git https://github.com/dejwCake/admin-auth.git
-        ${COMPOSE} run --rm php composer config repositories.admin-listing git https://github.com/dejwCake/admin-listing.git
-        ${COMPOSE} run --rm php composer config repositories.admin-translations git https://github.com/dejwCake/admin-translations.git
-        ${COMPOSE} run --rm php composer config repositories.admin-ui git https://github.com/dejwCake/admin-ui.git
-        ${COMPOSE} run --rm php composer config repositories.craftable git https://github.com/dejwCake/craftable.git
-        ${COMPOSE} run --rm php composer config repositories.craftable-media git https://github.com/dejwCake/craftable-media.git
-        ${COMPOSE} run --rm php composer config repositories.craftable-translatable git https://github.com/dejwCake/craftable-translatable.git
         ${COMPOSE} run --rm php composer config minimum-stability dev
     fi
 }
@@ -399,8 +390,8 @@ craftable() {
     installLaravel
 
     # TODO remove later
-    echo "Add repositories"
-    setCraftableRepositories
+    echo "Stability"
+    setCraftableStability
 
     echo "Require craftable"
 #    ${COMPOSE} run --rm php composer require "brackets/craftable"
