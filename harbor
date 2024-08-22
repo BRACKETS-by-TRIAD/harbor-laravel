@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TYPE=php
-VERSION=3.0.2
+VERSION=3.0.3
 
 # making harbor command available
 chmod +x ./harbor

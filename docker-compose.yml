@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   nginx:
     image: dejwcake/nginx:${HARBOR_NGINX_CONTAINER_VERSION:-1}
